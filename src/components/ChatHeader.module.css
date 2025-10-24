@@ -1,0 +1,40 @@
+.chatHeader {
+  width: 100%;
+  padding: 10px 15px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eee;
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 양쪽 끝으로 정렬 */
+
+  box-sizing: border-box;
+  flex-shrink: 0; /* chatWindow가 flex일 때 줄어들지 않도록 */
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #333;
+  
+  /* 로고를 가운데 정확히 두기 위해 */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.navButton {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 5px;
+  
+  /* 로고의 absolute 포지셔닝을 위해 z-index 부여 */
+  z-index: 1; 
+}
+
+.navButton:hover {
+  opacity: 0.7;
+}
