@@ -17,7 +17,10 @@ pipeline {
         stage('Checkout from Main') {
             steps {
                 echo 'Checking out main branch...'
-                git branch: 'main', url: 'https://github.com/FISA5th-AI-Final-Team4/FrontEnd.git'
+                
+                git branch: 'main', 
+                    url: 'https://github.com/FISA5th-AI-Final-Team4/FrontEnd.git', 
+                    credentialsId: 'my-github-token'
             }
         }
 
