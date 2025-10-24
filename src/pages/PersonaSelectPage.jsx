@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PersonaCard from '../components/PersonaCard';
-import './PersonaSelectPage.css'; // CSS 파일 임포트
+import style from './PersonaSelectPage.module.css'; // CSS 파일 임포트
 
 function PersonaSelectPage() {
   const navigate = useNavigate();
@@ -103,7 +103,7 @@ function PersonaSelectPage() {
       ) : (
         <>
           <h1>페르소나를 선택하세요</h1>
-          <div className="persona-list">
+          <div className={style.personaList}>
             {personas.map((persona) => (
               <PersonaCard 
                 key={persona.id} 
