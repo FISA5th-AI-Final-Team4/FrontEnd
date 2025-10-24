@@ -1,0 +1,29 @@
+.persona-select-container {
+  width: 25vw;
+  height: 90vh;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: var(--white);
+  color: #333;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px var(--primary-blue);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+h1 {
+  color: #333;
+}
+
+.persona-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
