@@ -77,19 +77,18 @@ function PersonaSelectPage() {
 
   if (loading) {
     return (
-      <div 
-        className="persona-select-container" 
-        style={{ justifyContent: 'center' }}
-      >
-        <h1>로딩 중...</h1>
-      </div>
-    );
+          <div 
+            className="phone-screen-container" 
+            style={{ justifyContent: 'center' }}
+          >
+            <h1>로딩 중...</h1>
+          </div>    );
   }
 
   if (error) {
     return (
       <div 
-        className="persona-select-container" 
+        className="phone-screen-container" 
         style={{ justifyContent: 'center' }}
       >
         <h1>오류: {error}</h1>
@@ -98,7 +97,7 @@ function PersonaSelectPage() {
   }
 
   return (
-    <div className="persona-select-container">
+    <div className="phone-screen-container">
       {isCreatingSession ? (
         <h1 style={{justifyContent: 'center'}}>채팅 세션을 생성하는 중...</h1>
       ) : (

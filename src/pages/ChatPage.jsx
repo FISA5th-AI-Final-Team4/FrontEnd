@@ -1,6 +1,6 @@
 function ChatPage() {
   return (
-    <div>
+    <div className="phone-screen-container">
       <h1>채팅 페이지</h1>
     </div>
   );
