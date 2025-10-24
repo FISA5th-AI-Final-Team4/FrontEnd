@@ -21,9 +21,9 @@ pipeline {
             }
         }
 
-        // 4. Jenkins 호스트에 설치된 Node.js로 빌드 실행
+        // 4. Jenkins 호스트에 설치된 NodeJS로 빌드 실행
         stage('Build') {
-            // Jenkins 호스트에 설치된 Node.js/npm을 사용
+            // Jenkins 호스트에 설치된 NodeJS/npm을 사용
             stages {
                 // 4-1. 의존성 설치
                 stage('Install Dependencies') {
