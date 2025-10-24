@@ -5,38 +5,31 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.phone-screen-container {
+  width: 25vw;
+  height: 90vh;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: var(--white);
+  color: #333;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px var(--primary-blue);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
+.phone-screen-container > * {
+  /* 1. 너비 문제를 해결 */
+  width: 100%;
+  /* 2. 높이 문제를 해결 (부모의 남은 공간을 다 차지) */
+  flex-grow: 1;
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  /* 3. 자식(.chatWindow)이 flex-grow를 쓸 수 있도록
+        이 중간 태그 자체도 flex 컨테이너로 만듭니다. */
+  display: flex;
+  flex-direction: column;
 }

@@ -1,4 +1,4 @@
-.persona-card {
+.personaCard {
   display: flex;
   align-items: center;
   background-color: #fff;
@@ -9,27 +9,27 @@
   transition: transform 0.2s;
 }
 
-.persona-card:hover {
+.personaCard:hover {
   transform: translateY(-5px);
 }
 
-.persona-info {
+.personaInfo {
   flex-grow: 1;
   margin-right: 20px;
 }
 
-.persona-info h2 {
+.personaInfo h2 {
   margin: 0 0 10px 0;
   font-size: 1.5em;
   color: #333;
 }
 
-.persona-info p {
+.personaInfo p {
   margin: 0;
   color: #666;
 }
 
-.persona-image {
+.personaImage {
   width: 80px;
   height: 100px;
   object-fit: cover;

@@ -1,17 +1,17 @@
 import React from 'react';
-import './PersonaCard.css';
+import style from './PersonaCard.module.css';
 
 function PersonaCard({ persona, onSelect }) {
   return (
     <div 
-      className="persona-card" 
+      className={style.personaCard} 
       onClick={() => onSelect(persona.id)}
     >
-      <div className="persona-info">
+      <div className={style.personaInfo}>
         <h2>{persona.name}</h2>
         <p>{persona.description}</p>
       </div>
-      <img src={persona.image} alt={persona.name} className="persona-image" />
+      <img src={persona.image} alt={persona.name} className={style.personaImage} />
     </div>
   );
 }
