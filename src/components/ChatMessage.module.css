@@ -1,0 +1,40 @@
+/* 메시지 한 줄을 감싸는 컨테이너 */
+.messageRow {
+  display: flex;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+/* 봇 (왼쪽 정렬) */
+.messageRow.bot {
+  justify-content: flex-start;
+}
+
+/* 사용자 (오른쪽 정렬) */
+.messageRow.user {
+  justify-content: flex-end;
+}
+
+/* 실제 말풍선 스타일 */
+.messageBubble {
+  padding: 10px 15px;
+  border-radius: 20px;
+  max-width: 70%;
+  word-wrap: break-word; /* 긴 텍스트 줄바꿈 */
+  line-height: 1.4;
+  font-size: 0.9rem;
+}
+
+/* 봇 말풍선 스타일 */
+.messageRow.bot .messageBubble {
+  background-color: #f0f0f0; /* 밝은 회색 */
+  color: #333;
+  border-bottom-left-radius: 5px; /* 왼쪽 하단 모서리를 약간 각지게 */
+}
+
+/* 사용자 말풍선 스타일 */
+.messageRow.user .messageBubble {
+  background-color: #007bff; /* 파란색 (원하는 색상으로 변경) */
+  color: white;
+  border-bottom-right-radius: 5px; /* 오른쪽 하단 모서리를 약간 각지게 */
+}
