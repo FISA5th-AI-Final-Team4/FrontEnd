@@ -57,3 +57,7 @@
   overflow-y: auto;
   box-sizing: border-box;
 }
+
+.phone-screen-container > * {
+  width: 100%;
+}

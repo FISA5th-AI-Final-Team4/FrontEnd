@@ -1,3 +1,11 @@
+.personaWindow {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%; /* 부모(phone-screen-container)의 높이를 100% 사용 */
+  box-sizing: border-box;
+}
+
 .personaList {
   display: flex;
   flex-direction: column;
