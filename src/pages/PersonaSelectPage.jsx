@@ -19,7 +19,7 @@ function PersonaSelectPage() {
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
-        const response = await fetch('/api/chat/personas', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/personas`, {
           headers: {
             'accept': 'application/json',
           },
@@ -50,7 +50,7 @@ function PersonaSelectPage() {
     setIsCreatingSession(true);
     setError(null);
     try {
-      const response = await fetch('/api/chat/session', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/session`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',
