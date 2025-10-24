@@ -23,6 +23,7 @@
   word-wrap: break-word; /* 긴 텍스트 줄바꿈 */
   line-height: 1.4;
   font-size: 0.9rem;
+  text-align: left;
 }
 
 /* 봇 말풍선 스타일 */
