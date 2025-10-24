@@ -32,7 +32,9 @@ pipeline {
                 stage('Build Project') {
                     steps {
                         echo 'Building static files (on host)...'
-                        sh 'npm run build'
+                        withCredentials([string(credentialsId: 'VITE_API_URL', variable: 'VITE_API_URL')]) {
+                            sh 'npm run build'
+                        }
                     }
                 }
             }
