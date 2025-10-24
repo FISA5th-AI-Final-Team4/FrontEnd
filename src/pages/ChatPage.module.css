@@ -1,0 +1,53 @@
+/* ⭐ 1. chatWindow (부모)
+  phone-screen-container의 자식인 chatWindow가
+  너비 100%를 가져야 합니다.
+*/
+.chatWindow {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  align-self: stretch;
+}
+
+/* ⭐ 2. messageList (자식)
+  chatWindow의 자식인 messageList도
+  너비 100%를 가져야 합니다.
+*/
+.messageList {
+  width: 100%;
+  box-sizing: border-box;
+  
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px 10px;
+  
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- 하단 입력창 (이전과 동일) --- */
+.inputArea {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #eee;
+  background-color: #fff;
+}
+
+.inputArea input {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 10px 15px;
+  margin-right: 10px;
+}
+
+.inputArea button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
