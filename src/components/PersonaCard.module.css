@@ -21,12 +21,12 @@
 .personaInfo h2 {
   margin: 0 0 10px 0;
   font-size: 1.5em;
-  color: #333;
+  color: var(--gray2);
 }
 
 .personaInfo p {
   margin: 0;
-  color: #666;
+  color: var(--gray2);
 }
 
 .personaImage {
@@ -34,5 +34,5 @@
   height: 100px;
   object-fit: cover;
   border-radius: 5px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--gray4);
 }

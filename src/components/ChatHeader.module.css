@@ -1,9 +1,9 @@
 .chatHeader {
   width: 100%;
   padding: 10px 15px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #eee;
-  
+  background-color: var(--white);
+  border-bottom: 1px solid var(--gray1);
+
   display: flex;
   align-items: center;
   justify-content: space-between; /* 양쪽 끝으로 정렬 */
@@ -15,7 +15,7 @@
 .logo {
   font-weight: bold;
   font-size: 1.2rem;
-  color: #333;
+  color: var(--primary-blue);
   
   /* 로고를 가운데 정확히 두기 위해 */
   position: absolute;
@@ -26,7 +26,7 @@
 .navButton {
   background: none;
   border: none;
-  color: #007bff;
+  color: var(--primary-blue);
   cursor: pointer;
   font-size: 0.9rem;
   padding: 5px;
