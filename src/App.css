@@ -1,25 +1,63 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
 .phone-screen-container {
-  width: 25vw;
-  height: 90vh;
-  margin: 20px auto;
-  padding: 20px;
+  /* 1. 모바일 기본 스타일 (Mobile-First)
+    - 768px 미만 모든 기기에서 적용 (기본값)
+    - 화면 전체를 채웁니다.
+  */
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 10px;
   background-color: var(--white);
   color: #333;
-  border-radius: 20px;
-  box-shadow: 0 4px 12px var(--primary-blue);
+  border-radius: 0;
+  box-shadow: none;
+  
+  /* --- 공통 Flex 속성 --- */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   overflow-y: auto;
   box-sizing: border-box;
+}
+
+/* 2. 태블릿 및 15인치 랩탑 (Breakpoint: 768px)
+  - 화면 너비가 768px "이상"일 때 적용됩니다.
+  - 1단계 모바일 스타일을 덮어씁니다.
+*/
+@media (min-width: 768px) {
+  .phone-screen-container {
+    /* 표준 폰 시뮬레이터 크기 (iPhone 14 Pro) */
+    width: 390px;
+    height: 844px;
+    
+    /* 중앙 정렬 및 디자인 요소 */
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px var(--primary-blue);
+  }
+}
+
+/* 3. 대형 데스크톱 (27인치 모니터 등) (Breakpoint: 1440px)
+  - 화면 너비가 1440px "이상"일 때 적용됩니다.
+  - 2단계 랩탑 스타일을 덮어씁니다.
+*/
+@media (min-width: 1440px) {
+  .phone-screen-container {
+    /* 더 큰 폰 시뮬레이터 크기 (iPhone 14 Pro Max) */
+    width: 430px;
+    height: 932px;
+
+    /* 여백을 조금 더 주어 안정적으로 보이게 함 */
+    margin: 30px auto; 
+  }
 }
 
 .phone-screen-container > * {
