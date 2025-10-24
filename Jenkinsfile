@@ -29,7 +29,6 @@ pipeline {
                 stage('Install Dependencies') {
                     steps {
                         echo 'Installing npm dependencies (on host)...'
-                        // [주의] 이 명령어를 실행하려면 호스트에 'npm'이 설치되어 있어야 합니다.
                         sh 'npm ci'
                     }
                 }
