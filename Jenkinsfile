@@ -8,22 +8,11 @@ pipeline {
     }
 
     stages {
-        // 3. Git 소스 코드 체크아웃
-        stage('Checkout from Main') {
-            steps {
-                echo 'Checking out main branch...'
-                
-                git branch: 'main', 
-                    url: 'https://github.com/FISA5th-AI-Final-Team4/FrontEnd.git', 
-                    credentialsId: 'my-github-token'
-            }
-        }
-
-        // 4. Jenkins 호스트에 설치된 NodeJS로 빌드 실행
+        // 3. Jenkins 호스트에 설치된 NodeJS로 빌드 실행
         stage('Build') {
             // Jenkins 호스트에 설치된 NodeJS/npm을 사용
             stages {
-                // 4-1. 의존성 설치
+                // 3-1. 의존성 설치
                 stage('Install Dependencies') {
                     steps {
                         echo 'Installing npm dependencies (on host)...'
@@ -39,7 +28,7 @@ pipeline {
                 //     }
                 // }
         
-                // 4-2. 프로덕션용 정적 파일 빌드
+                // 3-2. 프로덕션용 정적 파일 빌드
                 stage('Build Project') {
                     steps {
                         echo 'Building static files (on host)...'
