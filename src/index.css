@@ -11,6 +11,18 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --primary-blue: #0067AC;
+  --grad-blue1: #0078B9;
+  --grad-blue2: #20C4F4;
+  --secondary-blue1: #0040B3;
+  --secondary-blue2: #3F7EF1;
+  --black: #000000;
+  --white: #FFFFFF;
+  --gray1: #3C3C3C;
+  --gray2: #585D66;
+  --gray3: #404F5E;
+  --gray4: #F7F7F8;
 }
 
 a {
@@ -66,3 +78,4 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
