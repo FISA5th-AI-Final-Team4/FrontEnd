@@ -7,7 +7,7 @@ pipeline {
         githubPush()
     }
 
-    // 'main' 브랜치에서 발생한 이벤트일 경우에만 파이프라인을 실행합니다.
+    // 'main' 브랜치에서 발생한 이벤트일 경우에만 파이프라인을 실행
     when {
         branch 'main'
     }
