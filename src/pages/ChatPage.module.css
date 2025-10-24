@@ -6,9 +6,11 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  
   box-sizing: border-box;
   align-self: stretch;
+
+  flex-grow: 1;
 }
 
 /* ⭐ 2. messageList (자식)
@@ -27,27 +29,37 @@
   flex-direction: column;
 }
 
-/* --- 하단 입력창 (이전과 동일) --- */
+/* --- 하단 입력창 --- */
+
+/* 입력창과 버튼을 감싸는 영역 */
 .inputArea {
   display: flex;
   padding: 10px;
   border-top: 1px solid #eee;
-  background-color: #fff;
+  background-color: #ffffff;
 }
 
-.inputArea input {
-  flex-grow: 1;
+/* 텍스트 입력 필드 */
+.inputField {
+  flex-grow: 1; /* 입력창이 남는 공간을 모두 차지 */
   border: 1px solid #ccc;
   border-radius: 20px;
   padding: 10px 15px;
   margin-right: 10px;
+  font-size: 0.9rem;
 }
 
-.inputArea button {
+/* 전송 버튼 */
+.sendButton {
   padding: 10px 15px;
   border: none;
   border-radius: 20px;
-  background-color: #007bff;
+  background-color: #007bff; /* 파란색 (테마에 맞게 수정) */
   color: white;
   cursor: pointer;
+  font-weight: bold;
+}
+
+.sendButton:hover {
+  background-color: #0056b3; /* 호버 시 약간 어둡게 */
 }

@@ -23,5 +23,13 @@
 }
 
 .phone-screen-container > * {
+  /* 1. 너비 문제를 해결 */
   width: 100%;
+  /* 2. 높이 문제를 해결 (부모의 남은 공간을 다 차지) */
+  flex-grow: 1;
+
+  /* 3. 자식(.chatWindow)이 flex-grow를 쓸 수 있도록
+        이 중간 태그 자체도 flex 컨테이너로 만듭니다. */
+  display: flex;
+  flex-direction: column;
 }
