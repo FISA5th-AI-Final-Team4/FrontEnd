@@ -220,8 +220,9 @@ function ChatPage() {
   return (
     <div className={styles.chatWindow}>
       {/* ChatHeader에 핸들러 함수들을 props로 전달 */}
-      <ChatHeader onBack={handleBack} onReconnect={handleReconnect} />
-      
+      <div className={styles.headerContainer}>
+        <ChatHeader onBack={handleBack} onReconnect={handleReconnect} />
+      </div>
       {/* 메시지 목록 (자동 스크롤을 위해 ref 할당) */}
       <div className={styles.messageList} ref={messageListRef}>
         {/* 재연결 중일 때 로딩 메시지 */}
