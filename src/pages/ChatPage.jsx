@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ChatMessage from '../components/ChatMessage';
-import ChatHeader from '../components/ChatHeader'; 
+import ChatHeader from '../components/ChatHeader';
+import ChatFooter from '../components/ChatFooter';
 import styles from './ChatPage.module.css';
 
 
@@ -14,7 +15,6 @@ import styles from './ChatPage.module.css';
 function ChatPage() {
   // --- 상태 관리 (State) ---
   const [messages, setMessages] = useState([]); // 채팅 메시지 목록
-  const [newMessage, setNewMessage] = useState(''); // 입력창의 현재 텍스트
   const [isConnected, setIsConnected] = useState(false); // WebSocket 연결 상태 (UI 비활성화/메시지 표시용)
   const [isStreaming, setIsStreaming] = useState(false); // 챗봇이 응답을 생성(스트리밍) 중인지 여부를 관리
   const [isReconnecting, setIsReconnecting] = useState(false); // '재연결' 버튼 클릭 시 로딩 상태
@@ -268,12 +268,11 @@ function ChatPage() {
   };
 
   // 메시지 입력 폼 제출(전송) 시 실행됩니다.
-  const handleSendMessage = (e) => {
-    e.preventDefault(); // 폼의 기본 새로고침 동작 방지
-    const trimmedMessage = newMessage.trim(); // 입력값의 앞뒤 공백 제거
+  const handleSendMessage = (message) => {
+    const trimmedMessage = message.trim(); // 입력값의 앞뒤 공백 제거
     
     // 메세지 전송 방지 (빈 메세지 / 소켓 연결 안됨 / 스트리밍 중)
-    if (!trimmedMessage || !isConnected || isStreaming) return;
+    if (!trimmedMessage || !isConnected || isStreaming) return false;
 
     // 사용자 메시지를 객체로 만들어 UI에 즉시 추가
     const userMessage = { 
@@ -288,10 +287,11 @@ function ChatPage() {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(trimmedMessage);
       setIsStreaming(true); // 챗봇의 응답을 기다리기 위해 스트리밍 상태로 설정
+      return true;
     } else {
       console.error('WebSocket is not connected.');
+      return false;
     }
-    setNewMessage(''); // 입력창 비우기
   };
 
   // --- 렌더링 로직 ---
@@ -342,29 +342,12 @@ function ChatPage() {
       </div>
       
       {/* 메시지 입력 폼 */}
-      <form className={styles.inputArea} onSubmit={handleSendMessage}>
-        <input
-          type="text"
-          className={styles.inputField}
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder={
-            isInputDisabled 
-              ? (isStreaming ? "봇이 응답 중입니다..." : "연결 중...") 
-              : "메시지를 입력하세요..."
-          }
-          autoComplete="off"
-          disabled={isInputDisabled}
-          ref={inputRef}
-        />
-        <button 
-          type="submit" 
-          className={styles.sendButton}
-          disabled={isInputDisabled}
-        >
-          전송
-        </button>
-      </form>
+      <ChatFooter
+        isInputDisabled={isInputDisabled}
+        isStreaming={isStreaming}
+        inputRef={inputRef}
+        onSend={handleSendMessage}
+      />
     </div>
   );
 }
