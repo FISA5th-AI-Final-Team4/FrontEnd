@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ChatMessage from '../components/ChatMessage';
-import ChatHeader from '../components/ChatHeader'; 
+import ChatHeader from '../components/ChatHeader';
+import ChatFooter from '../components/ChatFooter';
 import styles from './ChatPage.module.css';
 
 
@@ -9,18 +10,20 @@ import styles from './ChatPage.module.css';
  * 실시간 채팅 페이지 컴포넌트
  * - WebSocket을 통해 서버와 실시간으로 메시지를 주고받습니다.
  * - ChatHeader를 통해 세션 관리(뒤로가기, 재연결) 기능을 제공합니다.
+ * - 서버로부터 JSON(Tool) 또는 텍스트 스트림(LLM)을 구분하여 처리합니다.
  */
 function ChatPage() {
   // --- 상태 관리 (State) ---
   const [messages, setMessages] = useState([]); // 채팅 메시지 목록
-  const [newMessage, setNewMessage] = useState(''); // 입력창의 현재 텍스트
   const [isConnected, setIsConnected] = useState(false); // WebSocket 연결 상태 (UI 비활성화/메시지 표시용)
+  const [isStreaming, setIsStreaming] = useState(false); // 챗봇이 응답을 생성(스트리밍) 중인지 여부를 관리
   const [isReconnecting, setIsReconnecting] = useState(false); // '재연결' 버튼 클릭 시 로딩 상태
-  
+
   // --- 참조 관리 (Refs) ---
   const ws = useRef(null); // WebSocket 인스턴스는 리렌더링 시에도 유지되어야 하므로 ref로 관리합니다.
   const messageListRef = useRef(null); // 메시지 목록 DOM 엘리먼트에 접근해 스크롤을 제어하기 위한 ref입니다.
   const didMountRef = useRef(false); // React 18의 Strict Mode(개발 모드)에서 이중 마운트를 감지하기 위한 ref입니다.
+  const inputRef = useRef(null); // 입력창 DOM을 가리킬 ref
   
   // React Router의 페이지 이동(리다이렉트)용 훅입니다.
   const navigate = useNavigate();
@@ -51,6 +54,8 @@ function ChatPage() {
 
     console.log('Attempting to connect WebSocket...');
     setIsConnected(false); // 연결 시도 전 상태를 '연결 끊김'으로 설정
+    setIsStreaming(false); // 연결 시도 시 스트리밍 상태 초기화
+    
     // VITE_API_URL (http:// 또는 https://)을 WebSocket 프로토콜(ws:// 또는 wss://)로 변환합니다.
     const wsUrl = import.meta.env.VITE_API_URL.replace(/^http/, 'ws');
     // 서버의 WebSocket 엔드포인트로 연결을 시도합니다.
@@ -65,19 +70,87 @@ function ChatPage() {
       setIsConnected(true); // 연결 상태 true
       setIsReconnecting(false); // 재연결 중이었다면 로딩 상태 해제
     };
-
-    // 서버로부터 메시지 수신 시
+    
+    // 서버로부터 메시지 수신 (JSON 프로토콜 파싱)
     socket.onmessage = (event) => {
-      // 봇(서버)이 보낸 메시지를 객체로 가공합니다.
-      const botMessage = { id: Date.now(), text: event.data, sender: 'bot' };
-      // 메시지 목록(state)에 새 메시지를 추가합니다. (함수형 업데이트)
-      setMessages(prevMessages => [...prevMessages, botMessage]);
+      let botMessage;
+      try {
+        // 백엔드가 send_json()으로 보낸 {type, payload} 객체를 파싱
+        botMessage = JSON.parse(event.data);
+      } catch (error) {
+        console.error("WebSocket: Received non-JSON message", event.data);
+        botMessage = { type: 'error', payload: '알 수 없는 서버 응답' };
+      }
+
+      // 백엔드가 릴레이한 프로토콜 타입에 따라 분기
+      switch (botMessage.type) {
+        
+        // 1. 텍스트 스트림 조각 (RAG 또는 일반 LLM 응답)
+        case 'text_chunk':
+          setIsStreaming(true); // 스트리밍 상태 활성화
+          setMessages(prevMessages => {
+            const lastMessage = prevMessages[prevMessages.length - 1];
+            
+            // 마지막 메시지가 봇의 'text' 타입 메시지이면, 텍스트를 이어 붙임
+            if (lastMessage && lastMessage.sender === 'bot' && lastMessage.type === 'text') {
+              const updatedLastMessage = { 
+                ...lastMessage, 
+                text: lastMessage.text + botMessage.payload 
+              };
+              return [...prevMessages.slice(0, -1), updatedLastMessage];
+            } else {
+              // 새 봇 텍스트 메시지 생성
+              const newBotMessage = { 
+                id: Date.now(), 
+                text: botMessage.payload, // payload가 토큰 1개
+                sender: 'bot', 
+                type: 'text' // 텍스트 타입
+              };
+              return [...prevMessages, newBotMessage];
+            }
+          });
+          break;
+
+        // 2. JSON Tool 응답 (날씨 등)
+        case 'json_data':
+          setIsStreaming(true); // 스트림의 일부로 간주 (종료 신호 전까지)
+          const jsonMessage = {
+            id: Date.now(),
+            jsonData: botMessage.payload, // payload가 JSON 객체
+            sender: 'bot',
+            type: 'json' // JSON 타입
+          };
+          setMessages(prevMessages => [...prevMessages, jsonMessage]);
+          break;
+
+        // 3. 스트림 종료 신호
+        case 'stream_end':
+          setIsStreaming(false); // 스트리밍 종료 -> 입력창 활성화
+          console.log('WebSocket: Stream ended');
+          break;
+
+        // 4. 에러 메시지
+        case 'error':
+          setIsStreaming(false); // 에러 발생 시 스트리밍 종료
+          const errorMessage = {
+            id: Date.now(),
+            text: botMessage.payload, // payload가 에러 메시지
+            sender: 'bot',
+            type: 'error'
+          };
+          setMessages(prevMessages => [...prevMessages, errorMessage]);
+          break;
+          
+        default:
+          console.warn("알 수 없는 메시지 타입:", botMessage);
+      }
     };
 
     // 연결 종료 시
-    socket.onclose = (event) => { // line 55
+    socket.onclose = (event) => { 
       console.log('WebSocket disconnected', event.code);
       setIsConnected(false); // 연결 상태 false
+      setIsStreaming(false); // 연결 종료 시 스트리밍 중단
 
       // 서버가 정의한 '유효하지 않은 세션' 코드(4001)로 연결이 종료된 경우
       if (event.code === 4001) {
@@ -89,10 +162,11 @@ function ChatPage() {
     };
 
     // 에러 발생 시
-    socket.onerror = (error) => { // line 67
+    socket.onerror = (error) => { 
       console.error('WebSocket error:', error);
       setIsConnected(false);
       setIsReconnecting(false); // 재연결 중 에러가 나도 로딩 상태 해제
+      setIsStreaming(false); // 에러 시 스트리밍 중단
     };
 
   }, [navigate]); // navigate 함수는 변경되지 않지만, ESLint 규칙에 따라 의존성에 포함
@@ -129,7 +203,7 @@ function ChatPage() {
     //    이 cleanup은 두 번째 마운트의 connectWebSocket 전에 실행되어야 하므로 필수적입니다.
     return () => {
       if (ws.current) {
-        console.log(`Cleaning up WebSocket (state: ${ws.current.readyState})`); // line 82
+        console.log(`Cleaning up WebSocket (state: ${ws.current.readyState})`);
         ws.current.close(); // 컴포넌트가 사라질 때 소켓 연결을 명시적으로 닫습니다.
       }
     };
@@ -164,6 +238,7 @@ function ChatPage() {
     
     console.log(`Re-establishing session for persona: ${personaId}`);
     setIsReconnecting(true); // 재연결 로딩 UI 활성화
+    setIsStreaming(false); // 재연결 시 스트리밍 상태 초기화
     setMessages([]); // 새 세션이므로 기존 메시지 목록 비우기
     
     try {
@@ -193,23 +268,30 @@ function ChatPage() {
   };
 
   // 메시지 입력 폼 제출(전송) 시 실행됩니다.
-  const handleSendMessage = (e) => {
-    e.preventDefault(); // 폼의 기본 새로고침 동작 방지
-    const trimmedMessage = newMessage.trim(); // 입력값의 앞뒤 공백 제거
-    if (!trimmedMessage || !isConnected) return; // 메시지가 비어있거나, 소켓이 연결되지 않았으면 전송하지 않음
+  const handleSendMessage = (message) => {
+    const trimmedMessage = message.trim(); // 입력값의 앞뒤 공백 제거
+    
+    // 메세지 전송 방지 (빈 메세지 / 소켓 연결 안됨 / 스트리밍 중)
+    if (!trimmedMessage || !isConnected || isStreaming) return false;
 
-    // 사용자 메시지를 객체로 만듭니다.
-    const userMessage = { id: Date.now(), text: trimmedMessage, sender: 'user' };
-    // 사용자 메시지를 즉시 UI에 추가 (낙관적 업데이트)
+    // 사용자 메시지를 객체로 만들어 UI에 즉시 추가
+    const userMessage = { 
+      id: Date.now(), 
+      text: trimmedMessage, 
+      sender: 'user',
+      type: 'text'
+    };
     setMessages(prevMessages => [...prevMessages, userMessage]);
 
     // WebSocket 연결이 'OPEN' 상태일 때만 서버로 메시지를 전송합니다.
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(trimmedMessage);
+      setIsStreaming(true); // 챗봇의 응답을 기다리기 위해 스트리밍 상태로 설정
+      return true;
     } else {
       console.error('WebSocket is not connected.');
+      return false;
     }
-    setNewMessage(''); // 입력창 비우기
   };
 
   // --- 렌더링 로직 ---
@@ -217,12 +299,24 @@ function ChatPage() {
   // 재연결 또는 초기 연결 중일 때를 구분하기 위한 로딩 상태 변수
   const isLoading = !isConnected && isReconnecting;
   
+  // 입력창 비활성화 로직
+  const isInputDisabled = !isConnected || isLoading || isStreaming;
+
+  // 입력창 포커스 관리용 useEffect
+  // isInputDisabled 상태가 변경될 때마다 실행
+  useEffect(() => {
+    if (!isInputDisabled) {
+      // 입력창이 활성화되면(disabled가 아니면)
+      // 즉시 포커스를 줍니다.
+      inputRef.current?.focus();
+    }
+  }, [isInputDisabled]); // 'isInputDisabled' 상태를 감시
+
   return (
     <div className={styles.chatWindow}>
-      {/* ChatHeader에 핸들러 함수들을 props로 전달 */}
-      <div className={styles.headerContainer}>
-        <ChatHeader onBack={handleBack} onReconnect={handleReconnect} />
-      </div>
+      {/* ChatHeader (뒤로가기, 로고, 재연결 버튼) */}
+      <ChatHeader onBack={handleBack} onReconnect={handleReconnect} />
+      
       {/* 메시지 목록 (자동 스크롤을 위해 ref 할당) */}
       <div className={styles.messageList} ref={messageListRef}>
         {/* 재연결 중일 때 로딩 메시지 */}
@@ -242,31 +336,18 @@ function ChatPage() {
         {messages.map((msg) => (
           <ChatMessage 
             key={msg.id} 
-            text={msg.text} 
-            sender={msg.sender} 
+            message={msg}
           />
         ))}
       </div>
       
       {/* 메시지 입력 폼 */}
-      <form className={styles.inputArea} onSubmit={handleSendMessage}>
-        <input
-          type="text"
-          className={styles.inputField}
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder={isConnected ? "메시지를 입력하세요..." : "연결 중..."}
-          autoComplete="off"
-          disabled={!isConnected || isLoading}
-        />
-        <button 
-          type="submit" 
-          className={styles.sendButton}
-          disabled={!isConnected || isLoading}
-        >
-          전송
-        </button>
-      </form>
+      <ChatFooter
+        isInputDisabled={isInputDisabled}
+        isStreaming={isStreaming}
+        inputRef={inputRef}
+        onSend={handleSendMessage}
+      />
     </div>
   );
 }
