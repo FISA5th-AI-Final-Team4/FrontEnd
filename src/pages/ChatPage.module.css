@@ -52,3 +52,42 @@
 .messageList::-webkit-scrollbar {
   display: none;
 }
+
+/* ⭐ 4. inputArea (자식 3 / 하단 입력창) */
+.inputArea {
+  /* 부모(.chatWindow) 공간이 부족해져도, 입력창의 높이는 줄어들지 않도록 고정 */
+  flex-shrink: 0;
+
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid var(--gray1);
+  background-color: var(--white);
+
+  box-sizing: border-box;
+}
+
+/* 텍스트 입력 필드 */
+.inputField {
+  flex-grow: 1; /* 입력창이 남는 공간을 모두 차지 */
+  border: 1px solid var(--gray3);
+  border-radius: 20px;
+  padding: 10px 15px;
+  margin-right: 10px;
+  font-size: 0.9rem;
+}
+
+/* 전송 버튼 */
+.sendButton {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  background-color: var(--secondary-blue2);
+  color: var(--white);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.sendButton:hover {
+  /* 호버 시 약간 어둡게 */
+  background-color: var(--secondary-blue1);
+}
