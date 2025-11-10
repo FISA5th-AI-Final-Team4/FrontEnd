@@ -41,6 +41,22 @@
 }
 
 /* 챗봇 응답 로딩 말풍선 스타일 */
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.messageRow.user .messageContent {
+  align-items: flex-end;
+}
+
+.timestamp {
+  font-size: 0.7rem;
+  color: #9b9b9b;
+  margin-top: 4px;
+}
+
 .typingBubble {
   display: inline-flex;
   align-items: center;

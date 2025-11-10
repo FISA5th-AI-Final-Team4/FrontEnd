@@ -85,8 +85,21 @@ function ChatPage() {
 
     // 서버로부터 메시지 수신 시
     socket.onmessage = (event) => {
-      // 봇(서버)이 보낸 메시지를 객체로 가공합니다.
-      const botMessage = { id: Date.now(), text: event.data, sender: 'bot' };
+      let parsedPayload;
+      
+      try {
+        parsedPayload = JSON.parse(event.data);
+      } catch (err) {
+        console.warn('Failed to parse WebSocket payload, falling back to plain text.', err);
+      }
+
+      const botMessage = {
+        id: parsedPayload?.id ?? Date.now(),
+        text: parsedPayload?.message ?? event.data,
+        sender: parsedPayload?.sender === 'user' ? 'user' : 'bot',
+        timestamp: parsedPayload?.timestamp ?? new Date().toISOString(),
+      };
+
       // 기존 로딩 버블을 제거한 뒤 봇 메시지를 추가합니다. (함수형 업데이트)
       setMessages(prevMessages => {
         const withoutTyping = prevMessages.filter(msg => msg.id !== TYPING_INDICATOR_ID);
@@ -222,14 +235,20 @@ function ChatPage() {
     const trimmedMessage = newMessage.trim(); // 입력값의 앞뒤 공백 제거
     if (!trimmedMessage || !isConnected) return; // 메시지가 비어있거나, 소켓이 연결되지 않았으면 전송하지 않음
 
+    const timestamp = new Date().toISOString();
     // 사용자 메시지를 객체로 만듭니다.
-    const userMessage = { id: Date.now(), text: trimmedMessage, sender: 'user' };
+    const userMessage = { id: Date.now(), text: trimmedMessage, sender: 'user', timestamp };
     // 사용자 메시지를 즉시 UI에 추가 (낙관적 업데이트)
     setMessages(prevMessages => [...prevMessages, userMessage]);
 
     // WebSocket 연결이 'OPEN' 상태일 때만 서버로 메시지를 전송합니다.
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(trimmedMessage);
+      const payload = {
+        message: trimmedMessage,
+        sender: 'user',
+        timestamp,
+      };
+      ws.current.send(JSON.stringify(payload));
       addTypingIndicator(); // 서버 응답 대기 로딩 표시
     } else {
       console.error('WebSocket is not connected.');
@@ -271,6 +290,7 @@ function ChatPage() {
             text={msg.text} 
             sender={msg.sender}
             isTyping={msg.isTyping}
+            timestamp={msg.timestamp}
           />
         ))}
       </div>
