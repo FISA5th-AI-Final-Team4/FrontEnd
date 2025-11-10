@@ -4,6 +4,7 @@ import ChatMessage from '../components/ChatMessage';
 import ChatHeader from '../components/ChatHeader'; 
 import styles from './ChatPage.module.css';
 
+const TYPING_INDICATOR_ID = 'bot-typing-indicator';
 
 /**
  * 실시간 채팅 페이지 컴포넌트
@@ -16,7 +17,7 @@ function ChatPage() {
   const [newMessage, setNewMessage] = useState(''); // 입력창의 현재 텍스트
   const [isConnected, setIsConnected] = useState(false); // WebSocket 연결 상태 (UI 비활성화/메시지 표시용)
   const [isReconnecting, setIsReconnecting] = useState(false); // '재연결' 버튼 클릭 시 로딩 상태
-  
+
   // --- 참조 관리 (Refs) ---
   const ws = useRef(null); // WebSocket 인스턴스는 리렌더링 시에도 유지되어야 하므로 ref로 관리합니다.
   const messageListRef = useRef(null); // 메시지 목록 DOM 엘리먼트에 접근해 스크롤을 제어하기 위한 ref입니다.
@@ -32,6 +33,22 @@ function ChatPage() {
       messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const addTypingIndicator = useCallback(() => {
+    setMessages(prevMessages => {
+      if (prevMessages.some(msg => msg.id === TYPING_INDICATOR_ID)) {
+        return prevMessages;
+      }
+      return [
+        ...prevMessages,
+        { id: TYPING_INDICATOR_ID, sender: 'bot', isTyping: true },
+      ];
+    });
+  }, []);
+
+  const removeTypingIndicator = useCallback(() => {
+    setMessages(prevMessages => prevMessages.filter(msg => msg.id !== TYPING_INDICATOR_ID));
+  }, []);
 
   /**
    * WebSocket 연결을 설정하고 이벤트 핸들러를 바인딩하는 핵심 함수입니다.
@@ -70,14 +87,18 @@ function ChatPage() {
     socket.onmessage = (event) => {
       // 봇(서버)이 보낸 메시지를 객체로 가공합니다.
       const botMessage = { id: Date.now(), text: event.data, sender: 'bot' };
-      // 메시지 목록(state)에 새 메시지를 추가합니다. (함수형 업데이트)
-      setMessages(prevMessages => [...prevMessages, botMessage]);
+      // 기존 로딩 버블을 제거한 뒤 봇 메시지를 추가합니다. (함수형 업데이트)
+      setMessages(prevMessages => {
+        const withoutTyping = prevMessages.filter(msg => msg.id !== TYPING_INDICATOR_ID);
+        return [...withoutTyping, botMessage];
+      });
     };
 
     // 연결 종료 시
     socket.onclose = (event) => { // line 55
       console.log('WebSocket disconnected', event.code);
       setIsConnected(false); // 연결 상태 false
+      removeTypingIndicator(); // 연결이 끊기면 로딩 버블 제거
 
       // 서버가 정의한 '유효하지 않은 세션' 코드(4001)로 연결이 종료된 경우
       if (event.code === 4001) {
@@ -93,9 +114,10 @@ function ChatPage() {
       console.error('WebSocket error:', error);
       setIsConnected(false);
       setIsReconnecting(false); // 재연결 중 에러가 나도 로딩 상태 해제
+      removeTypingIndicator();
     };
 
-  }, [navigate]); // navigate 함수는 변경되지 않지만, ESLint 규칙에 따라 의존성에 포함
+  }, [navigate, removeTypingIndicator]); // navigate 함수는 변경되지 않지만, ESLint 규칙에 따라 의존성에 포함
 
   /**
    * 컴포넌트 마운트 시 WebSocket 연결을 설정하고, 언마운트 시 연결을 정리합니다.
@@ -132,8 +154,9 @@ function ChatPage() {
         console.log(`Cleaning up WebSocket (state: ${ws.current.readyState})`); // line 82
         ws.current.close(); // 컴포넌트가 사라질 때 소켓 연결을 명시적으로 닫습니다.
       }
+      removeTypingIndicator();
     };
-  }, [connectWebSocket]); // connectWebSocket 함수가 재생성될 때만 이 effect가 다시 실행됩니다.
+  }, [connectWebSocket, removeTypingIndicator]); // connectWebSocket 함수가 재생성될 때만 이 effect가 다시 실행됩니다.
 
   // 헤더의 '뒤로가기' 버튼 클릭 시 실행됩니다.
   // 세션 정보를 삭제하고 메인 페이지로 이동합니다.
@@ -164,6 +187,7 @@ function ChatPage() {
     
     console.log(`Re-establishing session for persona: ${personaId}`);
     setIsReconnecting(true); // 재연결 로딩 UI 활성화
+    removeTypingIndicator();
     setMessages([]); // 새 세션이므로 기존 메시지 목록 비우기
     
     try {
@@ -206,8 +230,10 @@ function ChatPage() {
     // WebSocket 연결이 'OPEN' 상태일 때만 서버로 메시지를 전송합니다.
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(trimmedMessage);
+      addTypingIndicator(); // 서버 응답 대기 로딩 표시
     } else {
       console.error('WebSocket is not connected.');
+      removeTypingIndicator();
     }
     setNewMessage(''); // 입력창 비우기
   };
@@ -243,7 +269,8 @@ function ChatPage() {
           <ChatMessage 
             key={msg.id} 
             text={msg.text} 
-            sender={msg.sender} 
+            sender={msg.sender}
+            isTyping={msg.isTyping}
           />
         ))}
       </div>
