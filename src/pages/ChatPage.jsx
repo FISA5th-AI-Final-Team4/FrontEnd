@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ChatMessage from '../components/ChatMessage';
 import ChatHeader from '../components/ChatHeader'; 
+import ChatFooter from '../components/ChatFooter';
 import styles from './ChatPage.module.css';
 
 const TYPING_INDICATOR_ID = 'bot-typing-indicator';
@@ -14,7 +15,6 @@ const TYPING_INDICATOR_ID = 'bot-typing-indicator';
 function ChatPage() {
   // --- 상태 관리 (State) ---
   const [messages, setMessages] = useState([]); // 채팅 메시지 목록
-  const [newMessage, setNewMessage] = useState(''); // 입력창의 현재 텍스트
   const [isConnected, setIsConnected] = useState(false); // WebSocket 연결 상태 (UI 비활성화/메시지 표시용)
   const [isReconnecting, setIsReconnecting] = useState(false); // '재연결' 버튼 클릭 시 로딩 상태
   const [feedbackStatus, setFeedbackStatus] = useState({}); // messageId -> 'up' | 'down'
@@ -23,6 +23,7 @@ function ChatPage() {
   // --- 참조 관리 (Refs) ---
   const ws = useRef(null); // WebSocket 인스턴스는 리렌더링 시에도 유지되어야 하므로 ref로 관리합니다.
   const messageListRef = useRef(null); // 메시지 목록 DOM 엘리먼트에 접근해 스크롤을 제어하기 위한 ref입니다.
+  const inputRef = useRef(null);
   const didMountRef = useRef(false); // React 18의 Strict Mode(개발 모드)에서 이중 마운트를 감지하기 위한 ref입니다.
   
   // React Router의 페이지 이동(리다이렉트)용 훅입니다.
@@ -233,11 +234,10 @@ function ChatPage() {
     }
   };
 
-  // 메시지 입력 폼 제출(전송) 시 실행됩니다.
-  const handleSendMessage = (e) => {
-    e.preventDefault(); // 폼의 기본 새로고침 동작 방지
-    const trimmedMessage = newMessage.trim(); // 입력값의 앞뒤 공백 제거
-    if (!trimmedMessage || !isConnected) return; // 메시지가 비어있거나, 소켓이 연결되지 않았으면 전송하지 않음
+  // 메시지 전송 핸들러 (ChatFooter에서 사용)
+  const handleSendMessage = useCallback((messageText) => {
+    const trimmedMessage = messageText.trim(); // 입력값의 앞뒤 공백 제거
+    if (!trimmedMessage || !isConnected) return false; // 메시지가 비어있거나, 소켓이 연결되지 않았으면 전송하지 않음
 
     const timestamp = new Date().toISOString();
     // 사용자 메시지를 객체로 만듭니다.
@@ -254,17 +254,19 @@ function ChatPage() {
       };
       ws.current.send(JSON.stringify(payload));
       addTypingIndicator(); // 서버 응답 대기 로딩 표시
+      return true;
     } else {
       console.error('WebSocket is not connected.');
       removeTypingIndicator();
+      return false;
     }
-    setNewMessage(''); // 입력창 비우기
-  };
+  }, [addTypingIndicator, isConnected, removeTypingIndicator]);
 
   // --- 렌더링 로직 ---
 
   // 재연결 또는 초기 연결 중일 때를 구분하기 위한 로딩 상태 변수
   const isLoading = !isConnected && isReconnecting;
+  const isStreaming = messages.some(msg => msg.isTyping);
 
   const handleFeedback = useCallback(async (messageId, isHelpful) => {
     if (!messageId || feedbackLoading[messageId]) {
@@ -361,25 +363,12 @@ function ChatPage() {
         })}
       </div>
       
-      {/* 메시지 입력 폼 */}
-      <form className={styles.inputArea} onSubmit={handleSendMessage}>
-        <input
-          type="text"
-          className={styles.inputField}
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder={isConnected ? "메시지를 입력하세요..." : "연결 중..."}
-          autoComplete="off"
-          disabled={!isConnected || isLoading}
-        />
-        <button 
-          type="submit" 
-          className={styles.sendButton}
-          disabled={!isConnected || isLoading}
-        >
-          전송
-        </button>
-      </form>
+      <ChatFooter
+        isInputDisabled={!isConnected || isLoading}
+        isStreaming={isStreaming}
+        inputRef={inputRef}
+        onSend={handleSendMessage}
+      />
     </div>
   );
 }

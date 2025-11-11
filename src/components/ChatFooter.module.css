@@ -59,3 +59,9 @@
   /* 호버 시 약간 어둡게 */
   background-color: var(--secondary-blue1);
 }
+
+.icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}

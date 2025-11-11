@@ -15,7 +15,7 @@ function ChatFooter({ isInputDisabled, isStreaming, inputRef, onSend }) {
     const [newMessage, setNewMessage] = useState(''); // 입력창의 현재 텍스트
 
     const handleMenuClick = () => {
-        alert('메뉴 버튼이 클릭되었습니다.');
+        alert('메뉴 버튼을 눌렀습니다.');
     };
 
     // 메시지 입력 폼 제출(전송) 시 실행됩니다.
@@ -35,8 +35,13 @@ function ChatFooter({ isInputDisabled, isStreaming, inputRef, onSend }) {
 
     return (
         <div className={styles.inputArea}>
-            <button type="button" className={styles.menuButton} onClick={handleMenuClick}>
-                <img src={menuIcon} alt="메뉴" className={styles.logoImage} />
+            <button
+                type="button"
+                className={styles.menuButton}
+                onClick={handleMenuClick}
+                aria-label="메뉴 열기"
+            >
+                <img src={menuIcon} alt="메뉴" className={styles.icon} />
             </button>
             <form className={styles.messageForm} onSubmit={handleSubmit}>
                 {/* 메세지 입력 필드 */}
@@ -60,7 +65,7 @@ function ChatFooter({ isInputDisabled, isStreaming, inputRef, onSend }) {
                     className={styles.sendButton}
                     disabled={isInputDisabled}
                 >
-                    <img src={sendIcon} alt="전송" className={styles.logoImage} /> 
+                    <img src={sendIcon} alt="전송" className={styles.icon} /> 
                 </button>
             </form>
         </div>
