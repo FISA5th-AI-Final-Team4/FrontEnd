@@ -2,6 +2,8 @@ import React from 'react';
 import styles from './ChatMessage.module.css';
 import thumbsUpIcon from '../assets/icons/thumbs-up.svg';
 import thumbsDownIcon from '../assets/icons/thumbs-down.svg';
+import thumbsUpBlueIcon from '../assets/icons/thumbs-up-blue.svg';
+import thumbsDownBlueIcon from '../assets/icons/thumbs-down-red.svg';
 
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return '';
@@ -68,7 +70,10 @@ function ChatMessage({
                   disabled={feedbackDisabled}
                   aria-label="유용했어요"
                 >
-                  <img src={thumbsUpIcon} alt="엄지 위" />
+                  <img
+                    src={feedbackValue === 'up' ? thumbsUpBlueIcon : thumbsUpIcon}
+                    alt="엄지 위"
+                  />
                 </button>
                 <button
                   type="button"
@@ -77,7 +82,10 @@ function ChatMessage({
                   disabled={feedbackDisabled}
                   aria-label="별로였어요"
                 >
-                  <img src={thumbsDownIcon} alt="엄지 아래" />
+                  <img
+                    src={feedbackValue === 'down' ? thumbsDownBlueIcon : thumbsDownIcon}
+                    alt="엄지 아래"
+                  />
                 </button>
               </div>
             )}

@@ -73,7 +73,7 @@
 }
 
 .feedbackButton {
-  border: 1px solid transparent;
+  border: none;
   background-color: transparent;
   padding: 4px;
   border-radius: 12px;
@@ -100,8 +100,7 @@
 }
 
 .feedbackButton.active {
-  border-color: var(--secondary-blue2);
-  background-color: rgba(84, 123, 255, 0.1);
+  background-color: transparent;
 }
 
 .timestamp {
