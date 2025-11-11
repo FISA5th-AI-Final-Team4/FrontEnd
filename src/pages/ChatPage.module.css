@@ -7,6 +7,7 @@
   flex-direction: column; /* 자식들을 수직으로 쌓음 */
   flex-grow: 1; /* 부모(phone-screen-container) 안에서 가능한 모든 공간을 차지 */
   width: 100%;
+  position: relative;
 
   /* 🚨 Flexbox + 스크롤의 핵심 속성 (2개) */
   min-height: 0; /* 자식(.messageList)의 높이가 부모보다 커질 때, 부모가 줄어들 수 있도록 허용 */

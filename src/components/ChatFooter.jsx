@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import styles from './ChatFooter.module.css';
 import menuIcon from '../assets/icons/menu.svg';
+import closeIcon from '../assets/icons/x.svg';
 import sendIcon from '../assets/icons/send.svg';
+import Menu from './Menu';
 
 /**
  * ChatPage 전용 푸터
@@ -13,10 +15,29 @@ import sendIcon from '../assets/icons/send.svg';
  */
 function ChatFooter({ isInputDisabled, isStreaming, inputRef, onSend }) {
     const [newMessage, setNewMessage] = useState(''); // 입력창의 현재 텍스트
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const footerRef = useRef(null);
+    const [footerHeight, setFooterHeight] = useState(0);
 
-    const handleMenuClick = () => {
-        alert('메뉴 버튼을 눌렀습니다.');
+    const handleMenuToggle = () => {
+        if (footerRef.current) {
+            setFooterHeight(footerRef.current.offsetHeight);
+        }
+        setIsMenuOpen(prev => !prev);
     };
+
+    const handleCloseMenu = () => setIsMenuOpen(false);
+
+    useLayoutEffect(() => {
+        const updateHeight = () => {
+            if (footerRef.current) {
+                setFooterHeight(footerRef.current.offsetHeight);
+            }
+        };
+        updateHeight();
+        window.addEventListener('resize', updateHeight);
+        return () => window.removeEventListener('resize', updateHeight);
+    }, []);
 
     // 메시지 입력 폼 제출(전송) 시 실행됩니다.
     const handleSubmit = (e) => {
@@ -34,40 +55,47 @@ function ChatFooter({ isInputDisabled, isStreaming, inputRef, onSend }) {
     };
 
     return (
-        <div className={styles.inputArea}>
-            <button
-                type="button"
-                className={styles.menuButton}
-                onClick={handleMenuClick}
-                aria-label="메뉴 열기"
-            >
-                <img src={menuIcon} alt="메뉴" className={styles.icon} />
-            </button>
-            <form className={styles.messageForm} onSubmit={handleSubmit}>
-                {/* 메세지 입력 필드 */}
-                <input
-                    type="text"
-                    className={styles.inputField}
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder={
-                        isInputDisabled
-                            ? (isStreaming ? "봇이 응답 중입니다..." : "연결 중...")
-                            : "메시지를 입력하세요..."
-                    }
-                    autoComplete="off"
-                    disabled={isInputDisabled}
-                    ref={inputRef}
-                />
-                {/* 전송 버튼 */}
+        <div className={styles.footerContainer}>
+            <div className={styles.inputArea} ref={footerRef}>
                 <button
-                    type="submit"
-                    className={styles.sendButton}
-                    disabled={isInputDisabled}
+                    type="button"
+                    className={styles.menuButton}
+                    onClick={handleMenuToggle}
+                    aria-label={isMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
                 >
-                    <img src={sendIcon} alt="전송" className={styles.icon} /> 
+                    <img src={isMenuOpen ? closeIcon : menuIcon} alt="" className={styles.icon} />
                 </button>
-            </form>
+                <form className={styles.messageForm} onSubmit={handleSubmit}>
+                    {/* 메세지 입력 필드 */}
+                    <input
+                        type="text"
+                        className={styles.inputField}
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder={
+                            isInputDisabled
+                                ? (isStreaming ? "봇이 응답 중입니다..." : "연결 중...")
+                                : "메시지를 입력하세요..."
+                        }
+                        autoComplete="off"
+                        disabled={isInputDisabled}
+                        ref={inputRef}
+                    />
+                    {/* 전송 버튼 */}
+                    <button
+                        type="submit"
+                        className={styles.sendButton}
+                        disabled={isInputDisabled}
+                    >
+                        <img src={sendIcon} alt="전송" className={styles.icon} /> 
+                    </button>
+                </form>
+            </div>
+            <Menu
+                isOpen={isMenuOpen}
+                onClose={handleCloseMenu}
+                bottomOffset={footerHeight}
+            />
         </div>
     );
 }

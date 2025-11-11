@@ -1,3 +1,7 @@
+.footerContainer {
+  width: 100%;
+}
+
 /* inputArea (하단 입력창) */
 .inputArea {
   /* 부모(.chatWindow) 공간이 부족해져도, 입력창의 높이는 줄어들지 않도록 고정 */
