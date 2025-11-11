@@ -23,7 +23,17 @@ function ChatHeader({ onBack, onReconnect }) {
         챗봇의 정석
       </div>
 
-      <button onClick={onReconnect} className={styles.navButton}>
+      <button
+        onClick={(e) => {
+          const btn = e.currentTarget;
+          btn.classList.remove(styles.spin);
+          void btn.offsetWidth; // reflow to restart animation
+          btn.classList.add(styles.spin);
+          setTimeout(() => btn.classList.remove(styles.spin), 600);
+          onReconnect?.();
+        }}
+        className={styles.navButton}
+      >
         <img src={refreshIcon} alt="새로고침" className={styles.logoImage} /> 
       </button>
     </header>
