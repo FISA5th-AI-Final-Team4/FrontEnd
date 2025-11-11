@@ -17,6 +17,8 @@ function ChatPage() {
   const [newMessage, setNewMessage] = useState(''); // 입력창의 현재 텍스트
   const [isConnected, setIsConnected] = useState(false); // WebSocket 연결 상태 (UI 비활성화/메시지 표시용)
   const [isReconnecting, setIsReconnecting] = useState(false); // '재연결' 버튼 클릭 시 로딩 상태
+  const [feedbackStatus, setFeedbackStatus] = useState({}); // messageId -> 'up' | 'down'
+  const [feedbackLoading, setFeedbackLoading] = useState({}); // messageId -> boolean
 
   // --- 참조 관리 (Refs) ---
   const ws = useRef(null); // WebSocket 인스턴스는 리렌더링 시에도 유지되어야 하므로 ref로 관리합니다.
@@ -94,7 +96,7 @@ function ChatPage() {
       }
 
       const botMessage = {
-        id: parsedPayload?.id ?? Date.now(),
+        id: parsedPayload?.message_id,
         text: parsedPayload?.message ?? event.data,
         sender: parsedPayload?.sender === 'user' ? 'user' : 'bot',
         timestamp: parsedPayload?.timestamp ?? new Date().toISOString(),
@@ -202,6 +204,8 @@ function ChatPage() {
     setIsReconnecting(true); // 재연결 로딩 UI 활성화
     removeTypingIndicator();
     setMessages([]); // 새 세션이므로 기존 메시지 목록 비우기
+    setFeedbackStatus({});
+    setFeedbackLoading({});
     
     try {
       // 세션 생성 API를 다시 호출합니다. (PersonaSelectPage와 동일한 로직)
@@ -261,6 +265,60 @@ function ChatPage() {
 
   // 재연결 또는 초기 연결 중일 때를 구분하기 위한 로딩 상태 변수
   const isLoading = !isConnected && isReconnecting;
+
+  const handleFeedback = useCallback(async (messageId, isHelpful) => {
+    if (!messageId || feedbackLoading[messageId]) {
+      return;
+    }
+
+    const targetValue = isHelpful ? 'up' : 'down';
+    if (feedbackStatus[messageId] === targetValue) {
+      return;
+    }
+
+    const apiBase = import.meta.env.VITE_API_URL;
+    if (!apiBase) {
+      console.warn('VITE_API_URL is not defined; feedback cannot be sent.');
+      return;
+    }
+
+    const previousValue = feedbackStatus[messageId];
+    setFeedbackStatus(prev => ({ ...prev, [messageId]: targetValue }));
+    setFeedbackLoading(prev => ({ ...prev, [messageId]: true }));
+
+    try {
+      const response = await fetch(`${apiBase}/api/chat/feedback`, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message_id: messageId,
+          is_helpful: isHelpful,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send feedback');
+      }
+    } catch (err) {
+      console.error('Failed to send feedback', err);
+      alert('피드백 전송에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      setFeedbackStatus(prev => {
+        if (previousValue) {
+          return { ...prev, [messageId]: previousValue };
+        }
+        const { [messageId]: _removed, ...rest } = prev;
+        return rest;
+      });
+    } finally {
+      setFeedbackLoading(prev => {
+        const { [messageId]: _removed, ...rest } = prev;
+        return rest;
+      });
+    }
+  }, [feedbackLoading, feedbackStatus]);
   
   return (
     <div className={styles.chatWindow}>
@@ -284,15 +342,23 @@ function ChatPage() {
         )}
         
         {/* 메시지 목록을 순회하며 ChatMessage 컴포넌트 렌더링 */}
-        {messages.map((msg) => (
-          <ChatMessage 
-            key={msg.id} 
-            text={msg.text} 
-            sender={msg.sender}
-            isTyping={msg.isTyping}
-            timestamp={msg.timestamp}
-          />
-        ))}
+        {messages.map((msg) => {
+          const showFeedback = msg.sender === 'bot' && !msg.isTyping && msg.id && msg.id !== TYPING_INDICATOR_ID;
+          const messageId = msg.id;
+          return (
+            <ChatMessage 
+              key={msg.id} 
+              text={msg.text} 
+              sender={msg.sender}
+              isTyping={msg.isTyping}
+              timestamp={msg.timestamp}
+              showFeedback={showFeedback}
+              feedbackValue={showFeedback ? feedbackStatus[messageId] : undefined}
+              feedbackDisabled={!!feedbackLoading[messageId]}
+              onFeedback={(isHelpful) => handleFeedback(messageId, isHelpful)}
+            />
+          );
+        })}
       </div>
       
       {/* 메시지 입력 폼 */}
