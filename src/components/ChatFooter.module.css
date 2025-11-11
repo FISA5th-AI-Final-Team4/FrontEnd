@@ -8,6 +8,8 @@
   flex-shrink: 0;
 
   display: flex;
+  position: relative;
+  z-index: 20;
   align-items: center;
   padding: 10px;
   border-top: 1px solid var(--gray1);

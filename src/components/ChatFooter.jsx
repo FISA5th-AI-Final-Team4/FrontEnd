@@ -28,6 +28,12 @@ function ChatFooter({ isInputDisabled, isStreaming, inputRef, onSend }) {
 
     const handleCloseMenu = () => setIsMenuOpen(false);
 
+    const handleQuickQuestion = (question) => {
+        if (!question) return false;
+        const didSend = onSend(question);
+        return didSend;
+    };
+
     useLayoutEffect(() => {
         const updateHeight = () => {
             if (footerRef.current) {
@@ -95,6 +101,7 @@ function ChatFooter({ isInputDisabled, isStreaming, inputRef, onSend }) {
                 isOpen={isMenuOpen}
                 onClose={handleCloseMenu}
                 bottomOffset={footerHeight}
+                onQuestionSelect={handleQuickQuestion}
             />
         </div>
     );
