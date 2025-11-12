@@ -1,5 +1,7 @@
 import React from 'react';
 import styles from './ChatHeader.module.css';
+import arrowLeftIcon from '../assets/icons/arrow-left.svg';
+import refreshIcon from '../assets/icons/refresh.svg';
 
 /**
  * ChatPage 전용 헤더
@@ -11,18 +13,28 @@ function ChatHeader({ onBack, onReconnect }) {
   return (
     <header className={styles.chatHeader}>
       <button onClick={onBack} className={styles.navButton}>
-        〈 뒤로
+        <img src={arrowLeftIcon} alt="뒤로가기"/>
       </button>
       
       {/* 중앙 로고: 텍스트 대신 <img> 태그를 사용할 수 있습니다.
         <img src="/path/to/your/logo.png" alt="Logo" className={styles.logoImage} /> 
       */}
       <div className={styles.logo}>
-        LOGO
+        챗봇의 정석
       </div>
 
-      <button onClick={onReconnect} className={styles.navButton}>
-        재연결
+      <button
+        onClick={(e) => {
+          const btn = e.currentTarget;
+          btn.classList.remove(styles.spin);
+          void btn.offsetWidth; // reflow to restart animation
+          btn.classList.add(styles.spin);
+          setTimeout(() => btn.classList.remove(styles.spin), 600);
+          onReconnect?.();
+        }}
+        className={styles.navButton}
+      >
+        <img src={refreshIcon} alt="새로고침"/> 
       </button>
     </header>
   );

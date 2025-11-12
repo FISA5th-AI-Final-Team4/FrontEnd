@@ -7,12 +7,28 @@
   flex-direction: column; /* 자식들을 수직으로 쌓음 */
   flex-grow: 1; /* 부모(phone-screen-container) 안에서 가능한 모든 공간을 차지 */
   width: 100%;
+  position: relative;
 
   /* 🚨 Flexbox + 스크롤의 핵심 속성 (2개) */
   min-height: 0; /* 자식(.messageList)의 높이가 부모보다 커질 때, 부모가 줄어들 수 있도록 허용 */
   box-sizing: border-box; /* 자식이 부모를 넘쳐도 부모 크기는 고정시킴 */
 
   overflow: hidden;
+  z-index: 0;
+}
+
+.chatWindow::before {
+  content: '';
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 320px;
+  height: 480px;
+  background: url('../assets/images/blueman-full.png') center / contain no-repeat;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ⭐ 2. headerContainer (자식 1 / 헤더) */
@@ -20,6 +36,8 @@
   /* 부모(.chatWindow) 공간이 부족해져도, 헤더의 높이는 줄어들지 않도록 고정 (기본값) */
   flex-shrink: 0;
   background-color: var(--white);
+  position: relative;
+  z-index: 1;
 }
 
 /* ⭐ 3. messageList (자식 2 / 메시지 목록)
@@ -31,6 +49,8 @@
     (헤더/입력창은 flex-grow가 0, messageList는 1이므로)
   */
   flex-grow: 1;
+  position: relative;
+  z-index: 1;
 
   /* 내용이 이 영역을 넘치면 Y축(수직) 스크롤바 생성 */
   overflow-y: auto;
@@ -51,4 +71,45 @@
 
 .messageList::-webkit-scrollbar {
   display: none;
+}
+
+/* ⭐ 4. inputArea (자식 3 / 하단 입력창) */
+.inputArea {
+  /* 부모(.chatWindow) 공간이 부족해져도, 입력창의 높이는 줄어들지 않도록 고정 */
+  flex-shrink: 0;
+
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid var(--gray1);
+  background-color: var(--white);
+
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+
+/* 텍스트 입력 필드 */
+.inputField {
+  flex-grow: 1; /* 입력창이 남는 공간을 모두 차지 */
+  border: 1px solid var(--gray3);
+  border-radius: 20px;
+  padding: 10px 15px;
+  margin-right: 10px;
+  font-size: 0.9rem;
+}
+
+/* 전송 버튼 */
+.sendButton {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  background-color: var(--secondary-blue2);
+  color: var(--white);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.sendButton:hover {
+  /* 호버 시 약간 어둡게 */
+  background-color: var(--secondary-blue1);
 }

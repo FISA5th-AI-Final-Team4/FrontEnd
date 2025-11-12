@@ -21,9 +21,11 @@
   border-radius: 20px;
   max-width: 70%;
   word-wrap: break-word; /* 긴 텍스트 줄바꿈 */
+  overflow-wrap: anywhere; /* 공백이 없어도 줄바꿈 */
   line-height: 1.4;
   font-size: 0.9rem;
   text-align: left;
+  white-space: pre-line; /* 수신된 텍스트 내 줄바꿈을 유지 */
 }
 
 /* 봇 말풍선 스타일 */
@@ -38,4 +40,112 @@
   background-color: var(--secondary-blue2); /* 파란색 (원하는 색상으로 변경) */
   color: var(--white);
   border-bottom-right-radius: 5px; /* 오른쪽 하단 모서리를 약간 각지게 */
+}
+
+/* 챗봇 응답 로딩 말풍선 스타일 */
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.messageRow.user .messageContent {
+  align-items: flex-end;
+}
+
+.metaRow {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.messageRow.bot .metaRow {
+  justify-content: flex-start;
+}
+
+.messageRow.user .metaRow {
+  justify-content: flex-end;
+}
+
+.feedbackRow {
+  display: flex;
+  gap: 0.5px;
+}
+
+.feedbackButton {
+  border: none;
+  background-color: transparent;
+  padding: 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.feedbackButton img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.feedbackButton:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.feedbackButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.feedbackButton.active {
+  background-color: transparent;
+}
+
+.timestamp {
+  font-size: 0.7rem;
+  color: #9b9b9b;
+  margin-left: 1px;
+}
+
+.typingBubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 16px;
+}
+
+.typingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.2;
+  animation: typingBlink 1.2s infinite ease-in-out;
+}
+
+.typingDot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typingDot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBlink {
+  0% {
+    opacity: 0.2;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+  100% {
+    opacity: 0.2;
+    transform: translateY(0);
+  }
 }
