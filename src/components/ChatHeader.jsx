@@ -13,7 +13,7 @@ function ChatHeader({ onBack, onReconnect }) {
   return (
     <header className={styles.chatHeader}>
       <button onClick={onBack} className={styles.navButton}>
-        <img src={arrowLeftIcon} alt="뒤로가기" className={styles.logoImage} />
+        <img src={arrowLeftIcon} alt="뒤로가기"/>
       </button>
       
       {/* 중앙 로고: 텍스트 대신 <img> 태그를 사용할 수 있습니다.
@@ -34,7 +34,7 @@ function ChatHeader({ onBack, onReconnect }) {
         }}
         className={styles.navButton}
       >
-        <img src={refreshIcon} alt="새로고침" className={styles.logoImage} /> 
+        <img src={refreshIcon} alt="새로고침"/> 
       </button>
     </header>
   );
