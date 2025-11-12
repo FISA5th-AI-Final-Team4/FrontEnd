@@ -25,6 +25,7 @@ function ChatPage() {
   const messageListRef = useRef(null); // 메시지 목록 DOM 엘리먼트에 접근해 스크롤을 제어하기 위한 ref입니다.
   const inputRef = useRef(null);
   const didMountRef = useRef(false); // React 18의 Strict Mode(개발 모드)에서 이중 마운트를 감지하기 위한 ref입니다.
+  const promptQueueRef = useRef([]); // 각 유저 메시지를 큐에 저장해, 이후 봇 응답과 매칭합니다.
   
   // React Router의 페이지 이동(리다이렉트)용 훅입니다.
   const navigate = useNavigate();
@@ -96,12 +97,15 @@ function ChatPage() {
         console.warn('Failed to parse WebSocket payload, falling back to plain text.', err);
       }
 
+      const promptContext = promptQueueRef.current.shift();
       const botMessage = {
         id: parsedPayload?.message_id,
         text: parsedPayload?.message ?? event.data,
         sender: parsedPayload?.sender === 'user' ? 'user' : 'bot',
         timestamp: parsedPayload?.timestamp ?? new Date().toISOString(),
-      };
+        promptMessageId: promptContext?.id,
+      }
+      console.log('Received message via WebSocket:', botMessage);
 
       // 기존 로딩 버블을 제거한 뒤 봇 메시지를 추가합니다. (함수형 업데이트)
       setMessages(prevMessages => {
@@ -182,6 +186,7 @@ function ChatPage() {
     }
     localStorage.removeItem('sessionId'); // 로컬 스토리지에서 세션 ID 제거
     localStorage.removeItem('selectedPersonaId'); // 페르소나 ID도 제거
+    promptQueueRef.current = [];
     navigate('/'); // 메인 페이지로 리다이렉트
   };
 
@@ -207,6 +212,7 @@ function ChatPage() {
     setMessages([]); // 새 세션이므로 기존 메시지 목록 비우기
     setFeedbackStatus({});
     setFeedbackLoading({});
+    promptQueueRef.current = [];
     
     try {
       // 세션 생성 API를 다시 호출합니다. (PersonaSelectPage와 동일한 로직)
@@ -240,14 +246,20 @@ function ChatPage() {
     if (!trimmedMessage || !isConnected) return false; // 메시지가 비어있거나, 소켓이 연결되지 않았으면 전송하지 않음
 
     const timestamp = new Date().toISOString();
+    const userMessageId =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     // 사용자 메시지를 객체로 만듭니다.
-    const userMessage = { id: Date.now(), text: trimmedMessage, sender: 'user', timestamp };
+    const userMessage = { id: userMessageId, text: trimmedMessage, sender: 'user', timestamp };
     // 사용자 메시지를 즉시 UI에 추가 (낙관적 업데이트)
     setMessages(prevMessages => [...prevMessages, userMessage]);
+    promptQueueRef.current.push(userMessage);
 
     // WebSocket 연결이 'OPEN' 상태일 때만 서버로 메시지를 전송합니다.
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       const payload = {
+        message_id: userMessageId,
         message: trimmedMessage,
         sender: 'user',
         timestamp,
@@ -288,6 +300,15 @@ function ChatPage() {
     setFeedbackStatus(prev => ({ ...prev, [messageId]: targetValue }));
     setFeedbackLoading(prev => ({ ...prev, [messageId]: true }));
 
+    const targetMessage = messages.find(msg => msg.id === messageId);
+    const payload = {
+      message_id: messageId,
+      is_helpful: isHelpful,
+    };
+    if (targetMessage?.promptMessageId) {
+      payload.prompt_message_id = targetMessage.promptMessageId;
+    }
+
     try {
       const response = await fetch(`${apiBase}/api/chat/feedback`, {
         method: 'POST',
@@ -295,10 +316,7 @@ function ChatPage() {
           accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message_id: messageId,
-          is_helpful: isHelpful,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -306,6 +324,7 @@ function ChatPage() {
       }
     } catch (err) {
       console.error('Failed to send feedback', err);
+      console.log(payload);
       alert('피드백 전송에 실패했습니다. 잠시 후 다시 시도해주세요.');
       setFeedbackStatus(prev => {
         if (previousValue) {
@@ -320,7 +339,7 @@ function ChatPage() {
         return rest;
       });
     }
-  }, [feedbackLoading, feedbackStatus]);
+  }, [feedbackLoading, feedbackStatus, messages]);
   
   return (
     <div className={styles.chatWindow}>
