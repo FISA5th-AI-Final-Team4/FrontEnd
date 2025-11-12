@@ -63,9 +63,9 @@ function Menu({ isOpen, onClose, bottomOffset = 0, onQuestionSelect }) {
           <p className={styles.panelSubtitle}>필요한 도움을 빠르게 선택하세요</p>
         </div>
         <div className={styles.sectionContainer}>
-          {MENU_SECTIONS.map((section) => (
+          {MENU_SECTIONS.map((section, index) => (
             <MenuSection
-              key={section.title}
+              key={`${section.title}-${index}`}
               title={section.title}
               items={section.items}
               onSelect={(question) => {
