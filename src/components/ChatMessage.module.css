@@ -21,9 +21,11 @@
   border-radius: 20px;
   max-width: 70%;
   word-wrap: break-word; /* 긴 텍스트 줄바꿈 */
+  overflow-wrap: anywhere; /* 공백이 없어도 줄바꿈 */
   line-height: 1.4;
   font-size: 0.9rem;
   text-align: left;
+  white-space: pre-line; /* 수신된 텍스트 내 줄바꿈을 유지 */
 }
 
 /* 봇 말풍선 스타일 */

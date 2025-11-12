@@ -6,6 +6,11 @@ import ChatFooter from '../components/ChatFooter';
 import styles from './ChatPage.module.css';
 
 const TYPING_INDICATOR_ID = 'bot-typing-indicator';
+const INITIAL_BOT_MESSAGE_ID = 'bot-initial-message';
+const INITIAL_BOT_MESSAGE_TEXT = [
+  '안녕하세요, 고객님! 고객님께 딱 맞는 카드를 추천해드리는 우리카드 챗봇입니다.',
+  '왼쪽 아래의 메뉴를 눌러 원하시는 질문을 고르거나 직접 입력해주세요.',
+].join('\n');
 
 /**
  * 실시간 채팅 페이지 컴포넌트
@@ -85,6 +90,19 @@ function ChatPage() {
       console.log('WebSocket connected');
       setIsConnected(true); // 연결 상태 true
       setIsReconnecting(false); // 재연결 중이었다면 로딩 상태 해제
+      setMessages(prev => {
+        if (prev.some(msg => msg.id === INITIAL_BOT_MESSAGE_ID)) {
+          return prev;
+        }
+        const initialMessage = {
+          id: INITIAL_BOT_MESSAGE_ID,
+          text: INITIAL_BOT_MESSAGE_TEXT,
+          sender: 'bot',
+          timestamp: new Date().toISOString(),
+          disableFeedback: true,
+        };
+        return [...prev, initialMessage];
+      });
     };
 
     // 서버로부터 메시지 수신 시
@@ -364,7 +382,12 @@ function ChatPage() {
         
         {/* 메시지 목록을 순회하며 ChatMessage 컴포넌트 렌더링 */}
         {messages.map((msg) => {
-          const showFeedback = msg.sender === 'bot' && !msg.isTyping && msg.id && msg.id !== TYPING_INDICATOR_ID;
+          const showFeedback =
+            msg.sender === 'bot' &&
+            !msg.isTyping &&
+            msg.id &&
+            msg.id !== TYPING_INDICATOR_ID &&
+            !msg.disableFeedback;
           const messageId = msg.id;
           return (
             <ChatMessage 
