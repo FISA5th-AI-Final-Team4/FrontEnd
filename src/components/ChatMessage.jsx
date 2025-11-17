@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './ChatMessage.module.css';
+import ReactMarkdown from 'react-markdown';
 import thumbsUpIcon from '../assets/icons/thumbs-up.svg';
 import thumbsDownIcon from '../assets/icons/thumbs-down.svg';
 import thumbsUpBlueIcon from '../assets/icons/thumbs-up-blue.svg';
@@ -49,7 +50,9 @@ function ChatMessage({
     </div>
   ) : (
     <div className={styles.messageBubble}>
-      {text}
+      <ReactMarkdown>
+        {text}
+      </ReactMarkdown>
     </div>
   );
 
