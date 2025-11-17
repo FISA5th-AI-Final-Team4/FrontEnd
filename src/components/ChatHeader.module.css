@@ -38,3 +38,22 @@
 .navButton:hover {
   opacity: 0.7;
 }
+
+.navButton.spin img {
+  animation: rotateOnce 0.6s linear;
+}
+
+.logoImage {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+@keyframes rotateOnce {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

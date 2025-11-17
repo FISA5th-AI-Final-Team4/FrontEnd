@@ -2,8 +2,15 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ChatMessage from '../components/ChatMessage';
 import ChatHeader from '../components/ChatHeader'; 
+import ChatFooter from '../components/ChatFooter';
 import styles from './ChatPage.module.css';
 
+const TYPING_INDICATOR_ID = 'bot-typing-indicator';
+const INITIAL_BOT_MESSAGE_ID = 'bot-initial-message';
+const INITIAL_BOT_MESSAGE_TEXT = [
+  '안녕하세요, 고객님! 고객님께 딱 맞는 카드를 추천해드리는 우리카드 챗봇입니다.',
+  '왼쪽 아래의 메뉴를 눌러 원하시는 질문을 고르거나 직접 입력해주세요.',
+].join('\n');
 
 /**
  * 실시간 채팅 페이지 컴포넌트
@@ -13,14 +20,17 @@ import styles from './ChatPage.module.css';
 function ChatPage() {
   // --- 상태 관리 (State) ---
   const [messages, setMessages] = useState([]); // 채팅 메시지 목록
-  const [newMessage, setNewMessage] = useState(''); // 입력창의 현재 텍스트
   const [isConnected, setIsConnected] = useState(false); // WebSocket 연결 상태 (UI 비활성화/메시지 표시용)
   const [isReconnecting, setIsReconnecting] = useState(false); // '재연결' 버튼 클릭 시 로딩 상태
-  
+  const [feedbackStatus, setFeedbackStatus] = useState({}); // messageId -> 'up' | 'down'
+  const [feedbackLoading, setFeedbackLoading] = useState({}); // messageId -> boolean
+
   // --- 참조 관리 (Refs) ---
   const ws = useRef(null); // WebSocket 인스턴스는 리렌더링 시에도 유지되어야 하므로 ref로 관리합니다.
   const messageListRef = useRef(null); // 메시지 목록 DOM 엘리먼트에 접근해 스크롤을 제어하기 위한 ref입니다.
+  const inputRef = useRef(null);
   const didMountRef = useRef(false); // React 18의 Strict Mode(개발 모드)에서 이중 마운트를 감지하기 위한 ref입니다.
+  const promptQueueRef = useRef([]); // 각 유저 메시지를 큐에 저장해, 이후 봇 응답과 매칭합니다.
   
   // React Router의 페이지 이동(리다이렉트)용 훅입니다.
   const navigate = useNavigate();
@@ -32,6 +42,22 @@ function ChatPage() {
       messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const addTypingIndicator = useCallback(() => {
+    setMessages(prevMessages => {
+      if (prevMessages.some(msg => msg.id === TYPING_INDICATOR_ID)) {
+        return prevMessages;
+      }
+      return [
+        ...prevMessages,
+        { id: TYPING_INDICATOR_ID, sender: 'bot', isTyping: true },
+      ];
+    });
+  }, []);
+
+  const removeTypingIndicator = useCallback(() => {
+    setMessages(prevMessages => prevMessages.filter(msg => msg.id !== TYPING_INDICATOR_ID));
+  }, []);
 
   /**
    * WebSocket 연결을 설정하고 이벤트 핸들러를 바인딩하는 핵심 함수입니다.
@@ -54,7 +80,7 @@ function ChatPage() {
     // VITE_API_URL (http:// 또는 https://)을 WebSocket 프로토콜(ws:// 또는 wss://)로 변환합니다.
     const wsUrl = import.meta.env.VITE_API_URL.replace(/^http/, 'ws');
     // 서버의 WebSocket 엔드포인트로 연결을 시도합니다.
-    const socket = new WebSocket(`${wsUrl}/api/chat/ws/${sessionId}`);
+    const socket = new WebSocket(`${wsUrl}/api/chat/ws`);
     ws.current = socket; // 생성된 소켓 인스턴스를 ref에 저장하여 컴포넌트 전역에서 참조할 수 있게 합니다.
 
     // --- WebSocket 이벤트 핸들러 ---
@@ -64,20 +90,53 @@ function ChatPage() {
       console.log('WebSocket connected');
       setIsConnected(true); // 연결 상태 true
       setIsReconnecting(false); // 재연결 중이었다면 로딩 상태 해제
+      setMessages(prev => {
+        if (prev.some(msg => msg.id === INITIAL_BOT_MESSAGE_ID)) {
+          return prev;
+        }
+        const initialMessage = {
+          id: INITIAL_BOT_MESSAGE_ID,
+          text: INITIAL_BOT_MESSAGE_TEXT,
+          sender: 'bot',
+          timestamp: new Date().toISOString(),
+          disableFeedback: true,
+        };
+        return [...prev, initialMessage];
+      });
     };
 
     // 서버로부터 메시지 수신 시
     socket.onmessage = (event) => {
-      // 봇(서버)이 보낸 메시지를 객체로 가공합니다.
-      const botMessage = { id: Date.now(), text: event.data, sender: 'bot' };
-      // 메시지 목록(state)에 새 메시지를 추가합니다. (함수형 업데이트)
-      setMessages(prevMessages => [...prevMessages, botMessage]);
+      let parsedPayload;
+      
+      try {
+        parsedPayload = JSON.parse(event.data);
+      } catch (err) {
+        console.warn('Failed to parse WebSocket payload, falling back to plain text.', err);
+      }
+
+      const promptContext = promptQueueRef.current.shift();
+      const botMessage = {
+        id: parsedPayload?.message_id,
+        text: parsedPayload?.message ?? event.data,
+        sender: parsedPayload?.sender === 'user' ? 'user' : 'bot',
+        timestamp: parsedPayload?.timestamp ?? new Date().toISOString(),
+        promptMessageId: promptContext?.id,
+      }
+      console.log('Received message via WebSocket:', botMessage);
+
+      // 기존 로딩 버블을 제거한 뒤 봇 메시지를 추가합니다. (함수형 업데이트)
+      setMessages(prevMessages => {
+        const withoutTyping = prevMessages.filter(msg => msg.id !== TYPING_INDICATOR_ID);
+        return [...withoutTyping, botMessage];
+      });
     };
 
     // 연결 종료 시
     socket.onclose = (event) => { // line 55
       console.log('WebSocket disconnected', event.code);
       setIsConnected(false); // 연결 상태 false
+      removeTypingIndicator(); // 연결이 끊기면 로딩 버블 제거
 
       // 서버가 정의한 '유효하지 않은 세션' 코드(4001)로 연결이 종료된 경우
       if (event.code === 4001) {
@@ -93,9 +152,10 @@ function ChatPage() {
       console.error('WebSocket error:', error);
       setIsConnected(false);
       setIsReconnecting(false); // 재연결 중 에러가 나도 로딩 상태 해제
+      removeTypingIndicator();
     };
 
-  }, [navigate]); // navigate 함수는 변경되지 않지만, ESLint 규칙에 따라 의존성에 포함
+  }, [navigate, removeTypingIndicator]); // navigate 함수는 변경되지 않지만, ESLint 규칙에 따라 의존성에 포함
 
   /**
    * 컴포넌트 마운트 시 WebSocket 연결을 설정하고, 언마운트 시 연결을 정리합니다.
@@ -132,8 +192,9 @@ function ChatPage() {
         console.log(`Cleaning up WebSocket (state: ${ws.current.readyState})`); // line 82
         ws.current.close(); // 컴포넌트가 사라질 때 소켓 연결을 명시적으로 닫습니다.
       }
+      removeTypingIndicator();
     };
-  }, [connectWebSocket]); // connectWebSocket 함수가 재생성될 때만 이 effect가 다시 실행됩니다.
+  }, [connectWebSocket, removeTypingIndicator]); // connectWebSocket 함수가 재생성될 때만 이 effect가 다시 실행됩니다.
 
   // 헤더의 '뒤로가기' 버튼 클릭 시 실행됩니다.
   // 세션 정보를 삭제하고 메인 페이지로 이동합니다.
@@ -143,6 +204,7 @@ function ChatPage() {
     }
     localStorage.removeItem('sessionId'); // 로컬 스토리지에서 세션 ID 제거
     localStorage.removeItem('selectedPersonaId'); // 페르소나 ID도 제거
+    promptQueueRef.current = [];
     navigate('/'); // 메인 페이지로 리다이렉트
   };
 
@@ -164,7 +226,11 @@ function ChatPage() {
     
     console.log(`Re-establishing session for persona: ${personaId}`);
     setIsReconnecting(true); // 재연결 로딩 UI 활성화
+    removeTypingIndicator();
     setMessages([]); // 새 세션이므로 기존 메시지 목록 비우기
+    setFeedbackStatus({});
+    setFeedbackLoading({});
+    promptQueueRef.current = [];
     
     try {
       // 세션 생성 API를 다시 호출합니다. (PersonaSelectPage와 동일한 로직)
@@ -172,6 +238,7 @@ function ChatPage() {
         method: 'POST',
         headers: { 'accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({ persona_id: personaId }),
+        credentials: "include"
       });
 
       if (!response.ok) {
@@ -192,30 +259,106 @@ function ChatPage() {
     }
   };
 
-  // 메시지 입력 폼 제출(전송) 시 실행됩니다.
-  const handleSendMessage = (e) => {
-    e.preventDefault(); // 폼의 기본 새로고침 동작 방지
-    const trimmedMessage = newMessage.trim(); // 입력값의 앞뒤 공백 제거
-    if (!trimmedMessage || !isConnected) return; // 메시지가 비어있거나, 소켓이 연결되지 않았으면 전송하지 않음
+  // 메시지 전송 핸들러 (ChatFooter에서 사용)
+  const handleSendMessage = useCallback((messageText) => {
+    const trimmedMessage = messageText.trim(); // 입력값의 앞뒤 공백 제거
+    if (!trimmedMessage || !isConnected) return false; // 메시지가 비어있거나, 소켓이 연결되지 않았으면 전송하지 않음
 
+    const timestamp = new Date().toISOString();
+    const userMessageId =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     // 사용자 메시지를 객체로 만듭니다.
-    const userMessage = { id: Date.now(), text: trimmedMessage, sender: 'user' };
+    const userMessage = { id: userMessageId, text: trimmedMessage, sender: 'user', timestamp };
     // 사용자 메시지를 즉시 UI에 추가 (낙관적 업데이트)
     setMessages(prevMessages => [...prevMessages, userMessage]);
+    promptQueueRef.current.push(userMessage);
 
     // WebSocket 연결이 'OPEN' 상태일 때만 서버로 메시지를 전송합니다.
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(trimmedMessage);
+      const payload = {
+        message_id: userMessageId,
+        message: trimmedMessage,
+        sender: 'user',
+        timestamp,
+      };
+      ws.current.send(JSON.stringify(payload));
+      addTypingIndicator(); // 서버 응답 대기 로딩 표시
+      return true;
     } else {
       console.error('WebSocket is not connected.');
+      removeTypingIndicator();
+      return false;
     }
-    setNewMessage(''); // 입력창 비우기
-  };
+  }, [addTypingIndicator, isConnected, removeTypingIndicator]);
 
   // --- 렌더링 로직 ---
 
   // 재연결 또는 초기 연결 중일 때를 구분하기 위한 로딩 상태 변수
   const isLoading = !isConnected && isReconnecting;
+  const isStreaming = messages.some(msg => msg.isTyping);
+
+  const handleFeedback = useCallback(async (messageId, isHelpful) => {
+    if (!messageId || feedbackLoading[messageId]) {
+      return;
+    }
+
+    const targetValue = isHelpful ? 'up' : 'down';
+    if (feedbackStatus[messageId] === targetValue) {
+      return;
+    }
+
+    const apiBase = import.meta.env.VITE_API_URL;
+    if (!apiBase) {
+      console.warn('VITE_API_URL is not defined; feedback cannot be sent.');
+      return;
+    }
+
+    const previousValue = feedbackStatus[messageId];
+    setFeedbackStatus(prev => ({ ...prev, [messageId]: targetValue }));
+    setFeedbackLoading(prev => ({ ...prev, [messageId]: true }));
+
+    const targetMessage = messages.find(msg => msg.id === messageId);
+    const payload = {
+      message_id: messageId,
+      is_helpful: isHelpful,
+    };
+    if (targetMessage?.promptMessageId) {
+      payload.prompt_message_id = targetMessage.promptMessageId;
+    }
+
+    try {
+      const response = await fetch(`${apiBase}/api/chat/feedback`, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send feedback');
+      }
+    } catch (err) {
+      console.error('Failed to send feedback', err);
+      console.log(payload);
+      alert('피드백 전송에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      setFeedbackStatus(prev => {
+        if (previousValue) {
+          return { ...prev, [messageId]: previousValue };
+        }
+        const { [messageId]: _removed, ...rest } = prev;
+        return rest;
+      });
+    } finally {
+      setFeedbackLoading(prev => {
+        const { [messageId]: _removed, ...rest } = prev;
+        return rest;
+      });
+    }
+  }, [feedbackLoading, feedbackStatus, messages]);
   
   return (
     <div className={styles.chatWindow}>
@@ -239,34 +382,36 @@ function ChatPage() {
         )}
         
         {/* 메시지 목록을 순회하며 ChatMessage 컴포넌트 렌더링 */}
-        {messages.map((msg) => (
-          <ChatMessage 
-            key={msg.id} 
-            text={msg.text} 
-            sender={msg.sender} 
-          />
-        ))}
+        {messages.map((msg) => {
+          const showFeedback =
+            msg.sender === 'bot' &&
+            !msg.isTyping &&
+            msg.id &&
+            msg.id !== TYPING_INDICATOR_ID &&
+            !msg.disableFeedback;
+          const messageId = msg.id;
+          return (
+            <ChatMessage 
+              key={msg.id} 
+              text={msg.text} 
+              sender={msg.sender}
+              isTyping={msg.isTyping}
+              timestamp={msg.timestamp}
+              showFeedback={showFeedback}
+              feedbackValue={showFeedback ? feedbackStatus[messageId] : undefined}
+              feedbackDisabled={!!feedbackLoading[messageId]}
+              onFeedback={(isHelpful) => handleFeedback(messageId, isHelpful)}
+            />
+          );
+        })}
       </div>
       
-      {/* 메시지 입력 폼 */}
-      <form className={styles.inputArea} onSubmit={handleSendMessage}>
-        <input
-          type="text"
-          className={styles.inputField}
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder={isConnected ? "메시지를 입력하세요..." : "연결 중..."}
-          autoComplete="off"
-          disabled={!isConnected || isLoading}
-        />
-        <button 
-          type="submit" 
-          className={styles.sendButton}
-          disabled={!isConnected || isLoading}
-        >
-          전송
-        </button>
-      </form>
+      <ChatFooter
+        isInputDisabled={!isConnected || isLoading}
+        isStreaming={isStreaming}
+        inputRef={inputRef}
+        onSend={handleSendMessage}
+      />
     </div>
   );
 }

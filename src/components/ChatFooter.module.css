@@ -1,14 +1,43 @@
+.footerContainer {
+  width: 100%;
+}
+
 /* inputArea (하단 입력창) */
 .inputArea {
   /* 부모(.chatWindow) 공간이 부족해져도, 입력창의 높이는 줄어들지 않도록 고정 */
   flex-shrink: 0;
 
   display: flex;
+  position: relative;
+  z-index: 20;
+  align-items: center;
   padding: 10px;
   border-top: 1px solid var(--gray1);
   background-color: var(--white);
 
   box-sizing: border-box;
+}
+
+.menuButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.menuButton:hover {
+  background-color: var(--gray0);
+}
+
+.messageForm {
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 /* 텍스트 입력 필드 */
@@ -35,4 +64,10 @@
 .sendButton:hover {
   /* 호버 시 약간 어둡게 */
   background-color: var(--secondary-blue1);
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
