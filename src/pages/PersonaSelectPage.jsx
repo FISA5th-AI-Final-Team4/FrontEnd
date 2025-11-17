@@ -54,8 +54,9 @@ function PersonaSelectPage() {
         method: 'POST',
         headers: {
           'accept': 'application/json',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
+        credentials: "include",
         body: JSON.stringify({ persona_id: personaId }),
       });
 

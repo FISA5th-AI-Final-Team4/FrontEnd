@@ -80,7 +80,7 @@ function ChatPage() {
     // VITE_API_URL (http:// 또는 https://)을 WebSocket 프로토콜(ws:// 또는 wss://)로 변환합니다.
     const wsUrl = import.meta.env.VITE_API_URL.replace(/^http/, 'ws');
     // 서버의 WebSocket 엔드포인트로 연결을 시도합니다.
-    const socket = new WebSocket(`${wsUrl}/api/chat/ws/${sessionId}`);
+    const socket = new WebSocket(`${wsUrl}/api/chat/ws`);
     ws.current = socket; // 생성된 소켓 인스턴스를 ref에 저장하여 컴포넌트 전역에서 참조할 수 있게 합니다.
 
     // --- WebSocket 이벤트 핸들러 ---
@@ -238,6 +238,7 @@ function ChatPage() {
         method: 'POST',
         headers: { 'accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({ persona_id: personaId }),
+        credentials: "include"
       });
 
       if (!response.ok) {
