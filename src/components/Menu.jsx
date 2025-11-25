@@ -5,6 +5,7 @@ import MenuSection from './MenuSection';
 const STATIC_SECTIONS = {
   consumption: {
     title: '나의 소비데이터 기반 카드추천',
+    variant: 'consumption',
     items: [
       '나의 소비데이터 기반 카드를 추천해줘',
       '(로그인 기반 값 불러오기)대에게 가장 인기 있는 카드를 추천해줘',
@@ -12,6 +13,7 @@ const STATIC_SECTIONS = {
   },
   benefits: {
     title: '카드 상품 혜택 기반 추천',
+    variant: 'benefits',
     items: [
       '카드의 정석2 혜택 알려줘.',
       '편의점 혜택이 있는 카드들을 알려줘.',
@@ -80,11 +82,14 @@ function Menu({ isOpen, onClose, bottomOffset = 0, onQuestionSelect }) {
       {
         title: '자주 물어보는 질문',
         items: faqItems,
+        variant: 'faq',
       },
       {
         title: '자주 물어보는 용어',
         items: termItems,
         layout: 'grid',
+        variant: 'terms',
+        itemAlignment: 'center',
       },
       STATIC_SECTIONS.benefits,
     ],
@@ -118,7 +123,9 @@ function Menu({ isOpen, onClose, bottomOffset = 0, onQuestionSelect }) {
               key={`${section.title}-${index}`}
               title={section.title}
               items={section.items}
+              variant={section.variant}
               layout={section.layout}
+              itemAlignment={section.itemAlignment}
               onSelect={(question) => {
                 const shouldClose = onQuestionSelect
                   ? onQuestionSelect(question) !== false
