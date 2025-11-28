@@ -1,0 +1,51 @@
+.container {
+  margin-top: 6px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid #e7ebf2;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 320px;
+}
+
+.title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3d4c63;
+  margin: 0 0 10px;
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6c7a90;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.personaButton {
+  border: 1px solid #cfd8e6;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  background-color: #f7f9fc;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.personaButton:hover {
+  border-color: #94b5ff;
+  box-shadow: 0 2px 6px rgba(0, 80, 204, 0.12);
+}
+
+.personaName {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2b3d;
+}

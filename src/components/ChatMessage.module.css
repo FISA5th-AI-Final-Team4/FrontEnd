@@ -24,7 +24,7 @@ p {
 .messageBubble {
   padding: 10px 15px;
   border-radius: 20px;
-  max-width: 70%;
+  max-width: 90%;
   word-wrap: break-word; /* 긴 텍스트 줄바꿈 */
   overflow-wrap: anywhere; /* 공백이 없어도 줄바꿈 */
   line-height: 1.4;
@@ -52,9 +52,29 @@ p {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  max-width: 100%;
+}
+
+.messageRow.bot .messageContent,
+.messageRow.user .messageContent {
+  max-width: min(90%, 360px);
 }
 
 .messageRow.user .messageContent {
+  align-items: flex-end;
+}
+
+.extraContent {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.messageRow.user .extraContent {
   align-items: flex-end;
 }
 
@@ -153,4 +173,20 @@ p {
     opacity: 0.2;
     transform: translateY(0);
   }
+}
+
+.messageBubble table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.messageBubble th, 
+.messageBubble td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.messageBubble th {
+  background-color: #f2f2f2;
+  text-align: left;
 }

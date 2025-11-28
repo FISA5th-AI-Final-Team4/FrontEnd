@@ -1,10 +1,14 @@
 import React from 'react';
 import styles from './ChatMessage.module.css';
-import ReactMarkdown from 'react-markdown';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import thumbsUpIcon from '../assets/icons/thumbs-up.svg';
 import thumbsDownIcon from '../assets/icons/thumbs-down.svg';
 import thumbsUpBlueIcon from '../assets/icons/thumbs-up-blue.svg';
 import thumbsDownBlueIcon from '../assets/icons/thumbs-down-red.svg';
+import LoginBubble from './LoginBubble';
+import CardListBubble from './CardListBubble';
+import QuestionBubble from './QuestionBubble';
 
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return '';
@@ -27,6 +31,10 @@ const formatTimestamp = (timestamp) => {
  * @param {string} [props.feedbackValue] - 'up' | 'down' | undefined
  * @param {boolean} [props.feedbackDisabled] - 피드백 버튼 비활성화 여부
  * @param {(isHelpful: boolean) => void} [props.onFeedback] - 피드백 전송 콜백
+ * @param {object} [props.payload] - 서버에서 전달된 추가 UI 데이터
+ * @param {Array} [props.personaOptions] - 로그인 선택 옵션 목록
+ * @param {(persona: object) => void} [props.onPersonaSelect] - 로그인 선택 콜백
+ * @param {(question: string) => void} [props.onQuickQuestion] - 관련 질문 클릭 시 콜백
  */
 function ChatMessage({
   text,
@@ -37,10 +45,20 @@ function ChatMessage({
   feedbackValue,
   feedbackDisabled = false,
   onFeedback,
+  payload,
+  personaOptions = [],
+  onPersonaSelect,
+  hideLoginUI = false,
+  onQuickQuestion,
 }) {
   // sender에 따라 'user' 또는 'bot' 스타일을 동적으로 적용
   const messageClass = sender === 'user' ? styles.user : styles.bot;
   const formattedTimestamp = formatTimestamp(timestamp);
+
+  const personaChoices = Array.isArray(personaOptions) ? personaOptions : [];
+  const shouldShowLogin = !hideLoginUI && Boolean(payload?.login_required);
+  const cardList = payload?.card_list || payload?.cards || [];
+  const relatedQuestions = payload?.related_questions || payload?.faq_questions || [];
 
   const bubbleContent = isTyping ? (
     <div className={`${styles.messageBubble} ${styles.typingBubble}`}>
@@ -50,18 +68,42 @@ function ChatMessage({
     </div>
   ) : (
     <div className={styles.messageBubble}>
-      <ReactMarkdown>
+      <Markdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          // del(취소선) 태그가 감지되면, 내용(children) 앞뒤에 '~~' 문자를 붙여서 렌더링
+          del: ({ children }) => <>{`~${children}~`}</>
+        }}>
         {text}
-      </ReactMarkdown>
+      </Markdown>
     </div>
   );
 
   const shouldShowMeta = !isTyping && (showFeedback || formattedTimestamp);
+  const hasCardList = Array.isArray(cardList) && cardList.length > 0;
+  const hasRelatedQuestions = Array.isArray(relatedQuestions) && relatedQuestions.length > 0;
+  const hasExtra =
+    sender === 'bot' &&
+    !isTyping &&
+    (shouldShowLogin || hasCardList || hasRelatedQuestions);
 
   return (
     <div className={`${styles.messageRow} ${messageClass}`}>
       <div className={styles.messageContent}>
         {bubbleContent}
+        {hasExtra && (
+          <div className={styles.extraContent}>
+            {shouldShowLogin && (
+              <LoginBubble personas={personaChoices} onSelect={onPersonaSelect} />
+            )}
+            {hasCardList && (
+              <CardListBubble cards={cardList} />
+            )}
+            {hasRelatedQuestions && (
+              <QuestionBubble questions={relatedQuestions} onSelect={onQuickQuestion} />
+            )}
+          </div>
+        )}
         {shouldShowMeta && (
           <div className={styles.metaRow}>
             {showFeedback && (
