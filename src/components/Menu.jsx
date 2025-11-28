@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import styles from './Menu.module.css';
 import MenuSection from './MenuSection';
 
@@ -24,6 +24,7 @@ const STATIC_SECTIONS = {
 function Menu({ isOpen, onClose, bottomOffset = 0, onQuestionSelect }) {
   const [faqItems, setFaqItems] = useState([]);
   const [termItems, setTermItems] = useState([]);
+  const overlayRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -100,8 +101,19 @@ function Menu({ isOpen, onClose, bottomOffset = 0, onQuestionSelect }) {
     ? { bottom: `${bottomOffset}px` }
     : undefined;
 
+  useEffect(() => {
+    if (isOpen || typeof document === 'undefined') {
+      return;
+    }
+    const activeElement = document.activeElement;
+    if (activeElement && overlayRef.current?.contains(activeElement)) {
+      activeElement.blur();
+    }
+  }, [isOpen]);
+
   return (
     <div
+      ref={overlayRef}
       className={`${styles.overlay} ${isOpen ? styles.open : ''}`}
       onClick={onClose}
       style={overlayStyle}

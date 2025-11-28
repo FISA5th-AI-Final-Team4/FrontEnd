@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './ChatHeader.module.css';
-import arrowLeftIcon from '../assets/icons/arrow-left.svg';
+import wooriLogo from '../assets/images/woori-logo.png';
 import refreshIcon from '../assets/icons/refresh.svg';
 
 /**
@@ -9,16 +9,11 @@ import refreshIcon from '../assets/icons/refresh.svg';
  * @param {function} props.onBack - 뒤로가기 버튼 클릭 시 호출될 함수
  * @param {function} props.onReconnect - 세션 재수립 버튼 클릭 시 호출될 함수
  */
-function ChatHeader({ onBack, onReconnect }) {
+function ChatHeader({ onReconnect }) {
   return (
     <header className={styles.chatHeader}>
-      <button onClick={onBack} className={styles.navButton}>
-        <img src={arrowLeftIcon} alt="뒤로가기"/>
-      </button>
+      <img src={wooriLogo} alt="우리금융계열 로고" className={styles.logoImage} />
       
-      {/* 중앙 로고: 텍스트 대신 <img> 태그를 사용할 수 있습니다.
-        <img src="/path/to/your/logo.png" alt="Logo" className={styles.logoImage} /> 
-      */}
       <div className={styles.logo}>
         챗봇의 정석
       </div>
@@ -32,7 +27,8 @@ function ChatHeader({ onBack, onReconnect }) {
           setTimeout(() => btn.classList.remove(styles.spin), 600);
           onReconnect?.();
         }}
-        className={styles.navButton}
+        className={`${styles.navButton} ${styles.refreshButton}`}
+        aria-label="새로고침"
       >
         <img src={refreshIcon} alt="새로고침"/> 
       </button>
