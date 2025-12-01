@@ -1,52 +1,63 @@
 .chatHeader {
   width: 100%;
-  padding: 10px 15px;
+  padding: 8px 12px;
   background-color: var(--white);
   border-bottom: 1px solid var(--gray1);
-
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 양쪽 끝으로 정렬 */
-
+  gap: 8px;
   box-sizing: border-box;
-  flex-shrink: 0; /* chatWindow가 flex일 때 줄어들지 않도록 */
+  flex-shrink: 0;
+}
+
+.logoButton,
+.navButton {
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.logoButton:focus-visible,
+.navButton:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  border-radius: 50%;
+}
+
+.logoImage {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logo {
+  flex: 1;
+  text-align: center;
   font-weight: bold;
   font-size: 1.2rem;
   color: var(--primary-blue);
-  
-  /* 로고를 가운데 정확히 두기 위해 */
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .navButton {
-  background: none;
-  border: none;
   color: var(--primary-blue);
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 5px;
-  
-  /* 로고의 absolute 포지셔닝을 위해 z-index 부여 */
-  z-index: 1; 
+}
+
+.refreshButton img {
+  height: 20px;
+  width: 20px;
 }
 
 .navButton:hover {
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 .navButton.spin img {
   animation: rotateOnce 0.6s linear;
-}
-
-.logoImage {
-  height: 40px;
-  width: auto;
-  object-fit: contain;
 }
 
 @keyframes rotateOnce {
