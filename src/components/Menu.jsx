@@ -3,20 +3,27 @@ import styles from './Menu.module.css';
 import MenuSection from './MenuSection';
 
 const STATIC_SECTIONS = {
+  benefits: {
+    title: '카드 상품 혜택 조회',
+    variant: 'benefits',
+    items: [
+      '카드의 정석2와 카드의정석 EVERY 1 혜택 알려줘',
+      '카드의 정석2의 혜택과 이용조건에 대해서 알려줘'
+    ],
+  },
+  recommendations: {
+    title: '맞춤형 카드 추천',
+    variant: 'recommendations',
+    items: [
+      '편의점/카페/배달 위주로 할인 많이 받는 카드 추천해줘.',
+      '내년에 일본 여행 갈건데, 여행 위주로 할인을 많이 받을 수 있는 카드를 추천해줘'
+    ],
+  },
   consumption: {
     title: '나의 소비데이터 기반 카드추천',
     variant: 'consumption',
     items: [
-      '나의 소비데이터 기반 카드를 추천해줘',
-      '(로그인 기반 값 불러오기)대에게 가장 인기 있는 카드를 추천해줘',
-    ],
-  },
-  benefits: {
-    title: '카드 상품 혜택 기반 추천',
-    variant: 'benefits',
-    items: [
-      '카드의 정석2 혜택 알려줘.',
-      '편의점 혜택이 있는 카드들을 알려줘.',
+      '내 소비 패턴에 맞는 카드를 추천해줘'
     ],
   }
 };
@@ -26,12 +33,14 @@ function Menu({ isOpen, onClose, bottomOffset = 0, onQuestionSelect }) {
   const [termItems, setTermItems] = useState([]);
   const overlayRef = useRef(null);
 
+  const apiBase = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     let isMounted = true;
 
     const fetchFaqs = async () => {
       try {
-        const response = await fetch('/api/qna/faq?top_k=3');
+        const response = await fetch(`${apiBase}/api/qna/faq?top_k=3`);
         if (!response.ok) {
           throw new Error('Failed to fetch FAQ items');
         }
@@ -51,7 +60,7 @@ function Menu({ isOpen, onClose, bottomOffset = 0, onQuestionSelect }) {
 
     const fetchTerms = async () => {
       try {
-        const response = await fetch('/api/qna/terms?top_k=6');
+        const response = await fetch(`${apiBase}/api/qna/terms?top_k=6`);
         if (!response.ok) {
           throw new Error('Failed to fetch term items');
         }
@@ -79,6 +88,8 @@ function Menu({ isOpen, onClose, bottomOffset = 0, onQuestionSelect }) {
 
   const menuSections = useMemo(
     () => [
+      STATIC_SECTIONS.recommendations,
+      STATIC_SECTIONS.benefits,
       STATIC_SECTIONS.consumption,
       {
         title: '자주 물어보는 질문',
@@ -92,7 +103,6 @@ function Menu({ isOpen, onClose, bottomOffset = 0, onQuestionSelect }) {
         variant: 'terms',
         itemAlignment: 'center',
       },
-      STATIC_SECTIONS.benefits,
     ],
     [faqItems, termItems]
   );
