@@ -1,15 +1,9 @@
 # 챗봇의 정석 FrontEnd
 
+| 소개 | 관련 링크 |
+| ------ | ------ |
+| 챗봇의 정석의 얼굴이 되는 **클라이언트 화면 원격 저장소** 입니다. <br>웹소켓을 이용한 백엔드 통신에 기반하여, 질문 프리셋, 챗봇 응답 피드백 기능을 지원합니다.<br>**커스텀 JSON 프로토콜**을 파싱하여 MCP 기능별로 서비스 이용에 필요한 UI를 제공합니다.<br>**단순한 SPA**임을 고려하여 NextJS가 아닌 **ReactJS**를 개발 스택으로 선정했습니다. | 🔗[챗봇의 정석 프로젝트 설명 페이지](https://github.com/FISA5th-AI-Final-Team4) <br>🔗[BackEnd 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/BackEnd) <br>🔗[LLM서버 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/LLMServer) <br>🔗[MCP서버 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/MCPServer) <br>🔗[DB서버 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/LocalDbSetup) |
 
-챗봇의 정석의 얼굴이 되는 클라이언트 화면 원격 저장소 입니다.
-
-웹소켓을 이용한 백엔드 통신에 기반하여, 질문 프리셋, 챗봇 응답 피드백 기능을 지원합니다.
-
-**커스텀 JSON 프로토콜**을 파싱하여 MCP 기능별로 서비스 이용에 필요한 UI를 제공합니다.
-
-**단순한 SPA**임을 고려하여 NextJS가 아닌 **ReactJS**를 개발 스택으로 선정했습니다.
-
-🔗[챗봇의 정석 프로젝트 설명 페이지](https://github.com/FISA5th-AI-Final-Team4)
 
 ## ✨ 주요 기능
 - **실시간 채팅**: WebSocket 통신, 재연결 버튼
@@ -27,16 +21,20 @@
 
 ## ⚒️ 기술 스택
 - React 19 + Vite
-<img src="https://img.shields.io/badge/ReactJS-61DAFB?style=for-the-badge&logo=React&logoColor=black"/> <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=FFCF27">
+
+  <img src="https://img.shields.io/badge/ReactJS-61DAFB?style=for-the-badge&logo=React&logoColor=black"/> <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=FFCF27">
 
 - CSS Modules
-<img src="https://img.shields.io/badge/CSSModules-000000?style=for-the-badge&logo=CSSModules&logoColor=White"/>
+
+  <img src="https://img.shields.io/badge/CSSModules-000000?style=for-the-badge&logo=CSSModules&logoColor=White"/>
 
 - CloudFlare + Nginx + Jenkins
-<img src="https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=black"/> <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=Nginx&logoColor=black"/> <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=Jenkins&logoColor=FFFFFF">
+
+  <img src="https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=black"/> <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=Nginx&logoColor=black"/> <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=Jenkins&logoColor=FFFFFF">
 
 - Route53 + CloudFront + S3
-<img src="https://img.shields.io/badge/AWS Route53-6C5893?style=for-the-badge"/> <img src="https://img.shields.io/badge/AWS CloudFront-E4533E?style=for-the-badge"/> <img src="https://img.shields.io/badge/AWS S3-3F8624?style=for-the-badge"/>
+
+  <img src="https://img.shields.io/badge/AWS Route53-6C5893?style=for-the-badge"/> <img src="https://img.shields.io/badge/AWS CloudFront-E4533E?style=for-the-badge"/> <img src="https://img.shields.io/badge/AWS S3-3F8624?style=for-the-badge"/>
 
 
 ## 📁 프로젝트 구조
