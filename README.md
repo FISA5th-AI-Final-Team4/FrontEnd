@@ -2,7 +2,7 @@
 
 | 소개 | 관련 링크 |
 | ------ | ------ |
-| 챗봇의 정석의 얼굴이 되는 **클라이언트 화면 원격 저장소** 입니다. <br>웹소켓을 이용한 백엔드 통신에 기반하여, 질문 프리셋, 챗봇 응답 피드백 기능을 지원합니다.<br>**커스텀 JSON 프로토콜**을 파싱하여 MCP 기능별로 서비스 이용에 필요한 UI를 제공합니다.<br>**단순한 SPA**임을 고려하여 NextJS가 아닌 **ReactJS**를 개발 스택으로 선정했습니다. | 🔗[챗봇의 정석 프로젝트 설명 페이지](https://github.com/FISA5th-AI-Final-Team4) <br>🔗[BackEnd 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/BackEnd) <br>🔗[LLM서버 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/LLMServer) <br>🔗[MCP서버 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/MCPServer) <br>🔗[DB서버 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/LocalDbSetup) |
+| 챗봇의 정석의 얼굴이 되는 **클라이언트 화면 원격 저장소** 입니다. <br>웹소켓을 이용한 백엔드 통신에 기반하여, 질문 프리셋, 챗봇 응답 피드백 기능을 지원합니다.<br>**커스텀 JSON 프로토콜**을 파싱하여 MCP 기능별로 서비스 이용에 필요한 UI를 제공합니다.<br>**단순한 SPA**임을 고려하여 NextJS가 아닌 **ReactJS**를 개발 스택으로 선정했습니다. | 🔗[챗봇의 정석](https://github.com/FISA5th-AI-Final-Team4) <br>🔗[BackEnd 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/BackEnd) <br>🔗[LLM서버 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/LLMServer) <br>🔗[MCP서버 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/MCPServer) <br>🔗[DB서버 원격 저장소](https://github.com/FISA5th-AI-Final-Team4/LocalDbSetup) |
 
 
 ## ✨ 주요 기능
